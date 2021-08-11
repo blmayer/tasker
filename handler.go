@@ -14,6 +14,7 @@ var tasks = []Task{
 		Title:       "Find this website",
 		Summary:     "Congratulations! You found this task manager.",
 		Status:      "Done",
+		Creator:     "blmayer",
 		DateCreated: time.Now().Add(-48 * time.Hour),
 	},
 	{
@@ -21,6 +22,7 @@ var tasks = []Task{
 		Title:       "Learn to use this",
 		Summary:     "Click on the + sign to create a new task.",
 		Status:      "Active",
+		Creator:     "blmayer",
 		DateCreated: time.Now().Add(-10 * time.Second),
 	},
 	{
@@ -35,8 +37,10 @@ var tasks = []Task{
 	{
 		ID:          3,
 		Title:       "Make your login",
-		Summary:     "This task will have a link for a login page",
+		Summary:     "This task has a link for the login page.",
+		Description: `I'm glad you made your registration. Here is the link: <a href="/login">login page</a>.`,
 		Status:      "Blocked",
+		Creator:     "blmayer",
 		DateCreated: time.Now().Add(-12 * time.Hour),
 	},
 }
