@@ -15,7 +15,7 @@ var (
 	pages *template.Template
 )
 
-type task struct {
+type Task struct {
 	ID          int
 	Title       string
 	Status      string
@@ -39,6 +39,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", index)
+	http.HandleFunc("/tasks/", task)
 	http.HandleFunc("/new", newTask)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/register", register)
