@@ -2,10 +2,12 @@ FROM golang:1.16 as build
 
 ADD . /root/
 
-RUN cd /root && go build -v
+RUN cd /root && CGO_ENABLED=0 go build -v
 
 FROM scratch
 
-COPY --from=build /root/tasker /tasker
+COPY --from=build /root/tasker /
 
-CMD ["tasker"]
+EXPOSE 8080
+
+CMD ["/tasker"]
