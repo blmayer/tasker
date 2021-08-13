@@ -72,7 +72,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 	users := []User{}
 	query := base.FetchInput{
-		Q: base.Query{{"Token": userSession}},
+		Q: base.Query{{"Token.Value": userSession}},
 		Dest: &users,
 	}
 	_, err := usersDB.Fetch(&query)
@@ -161,7 +161,7 @@ func task(w http.ResponseWriter, r *http.Request) {
 
 	users := []User{}
 	query := base.FetchInput{
-		Q: base.Query{{"Token": userSession}},
+		Q: base.Query{{"Token.Value": userSession}},
 		Dest: &users,
 	}
 	_, err = usersDB.Fetch(&query)
