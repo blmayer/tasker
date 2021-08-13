@@ -238,9 +238,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 		&http.Cookie{
 			Name:     "token",
 			Value:    key,
-			// Domain:   "tasker.blmayer.dev",
-			// Secure:   true,
-			// SameSite: http.SameSiteStrictMode,
+			Domain:   "tasker.blmayer.dev",
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
 			Expires:  time.Now().Add(120 * time.Hour),
 		},
 	)
@@ -313,9 +313,9 @@ func register(w http.ResponseWriter, r *http.Request) {
 		&http.Cookie{
 			Name:     "token",
 			Value:    string(token),
-			// Domain:   "tasker.blmayer.dev",
-			// Secure:   true,
-			// SameSite: http.SameSiteStrictMode,
+			Domain:   "tasker.blmayer.dev",
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
 			Expires:  time.Now().Add(120 * time.Hour),
 		},
 	)
