@@ -20,7 +20,7 @@ var defaultTasks = []Task{
 		Summary:     "Click on the + sign to create a new task.",
 		Status:      "Active",
 		Creator:     "blmayer",
-		DateCreated: time.Now().Add(-10 * time.Second),
+		Date: time.Now().Add(-10 * time.Second),
 	},
 	{
 		ID:          3,
@@ -29,7 +29,7 @@ var defaultTasks = []Task{
 		Description: `I'm glad you made your registration. Here is the link: <a href="/login">login page</a>.`,
 		Status:      "Blocked",
 		Creator:     "blmayer",
-		DateCreated: time.Now().Add(-12 * time.Hour),
+		Date: time.Now().Add(-12 * time.Hour),
 	},
 	{
 		ID:          2,
@@ -38,7 +38,7 @@ var defaultTasks = []Task{
 		Description: `Here is the link: <a href="/register">registration page</a>. Welcome!`,
 		Status:      "Active",
 		Creator:     "blmayer",
-		DateCreated: time.Now().Add(-30 * time.Hour),
+		Date: time.Now().Add(-30 * time.Hour),
 	},
 	{
 		ID:          1,
@@ -46,38 +46,56 @@ var defaultTasks = []Task{
 		Summary:     "Congratulations! You found this task manager.",
 		Status:      "Done",
 		Creator:     "blmayer",
-		DateCreated: time.Now().Add(-48 * time.Hour),
+		Date: time.Now().Add(-48 * time.Hour),
 	},
 }
 
+type indexPayload struct {
+	Tasks []Task
+	User User
+}
+
 func index(w http.ResponseWriter, r *http.Request) {
+	p := indexPayload{
+		Tasks: defaultTasks,
+	}
 	cookies := r.Cookies()
 	if len(cookies) != 1 {
-		pages.ExecuteTemplate(w, "index.html", defaultTasks)
+		pages.ExecuteTemplate(w, "index.html", p)
 		return
 	}
 	userSession := cookies[0].Value
 	if userSession == "" {
-		pages.ExecuteTemplate(w, "index.html", defaultTasks)
+		pages.ExecuteTemplate(w, "index.html", p)
 		return
 	}
-	// if cookies[0].Expires.Unix() < time.Now().Unix() {
-	// 	http.Redirect(w, r, "/login", http.StatusUnauthorized)
-	// 	return
-	// }
 
-	user := User{}
-	tasks := make([]Task, 0)
-	err := usersDB.Get(userSession, &user)
+	users := []User{}
+	query := base.FetchInput{
+		Q: base.Query{{"Token": userSession}},
+		Dest: &users,
+	}
+	_, err := usersDB.Fetch(&query)
 	if err != nil {
 		// TODO: Show error page
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	if len(users) != 1 {
+		// TODO: Show error page
+		http.Error(w, "user conflict", http.StatusInternalServerError)
+		return
+	}
+	p.User = users[0]
+	if p.User.Token.Expires.Unix() < time.Now().Unix() {
+		http.Redirect(w, r, "/login", http.StatusUnauthorized)
+		return
+	}
 
-	query := base.FetchInput{
-		Q: base.Query{{"Creator": user.Nick}},
-		Dest: &tasks,
+	p.Tasks = []Task{}
+	query = base.FetchInput{
+		Q: base.Query{{"Creator": p.User.Nick}},
+		Dest: &p.Tasks,
 	}
 	_, err = tasksDB.Fetch(&query)
 	if err != nil {
@@ -94,15 +112,15 @@ func index(w http.ResponseWriter, r *http.Request) {
 		}
 
 		t := Task{
-			ID: len(tasks),
+			ID: len(p.Tasks),
 			Title:       r.Form.Get("title"),
 			Summary:     r.Form.Get("summary"),
 			Description: r.Form.Get("description"),
 			Status:      r.Form.Get("status"),
-			Creator:     user.Nick,
-			DateCreated: time.Now(),
+			Creator:     p.User.Nick,
+			Date: time.Now(),
 		}
-		tasks = append(tasks, t)
+		p.Tasks = append(p.Tasks, t)
 
 		go func(){
 			_, err = tasksDB.Put(t)
@@ -113,20 +131,22 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Sort by time by default
-	sort.SliceStable(tasks, func(i, j int) bool {
-		return tasks[i].DateCreated.Unix() > tasks[j].DateCreated.Unix()
+	sort.SliceStable(p.Tasks, func(i, j int) bool {
+		return p.Tasks[i].Date.Unix() > p.Tasks[j].Date.Unix()
 	})
 
-	pages.ExecuteTemplate(w, "index.html", tasks)
+	pages.ExecuteTemplate(w, "index.html", p)
 }
 
 func task(w http.ResponseWriter, r *http.Request) {
+	p:= indexPayload{Tasks: defaultTasks}
 	parts := strings.Split(r.URL.Path, "/")
 	id, err := strconv.Atoi(parts[len(parts)-1])
 	if err != nil {
-		pages.ExecuteTemplate(w, "index.html", defaultTasks)
+		pages.ExecuteTemplate(w, "index.html", p)
 		return
 	}
+	p.Tasks = []Task{}
 
 	cookies := r.Cookies()
 	if len(cookies) != 1 {
@@ -138,23 +158,32 @@ func task(w http.ResponseWriter, r *http.Request) {
 		pages.ExecuteTemplate(w, "task.html", defaultTasks[4-id])
 		return
 	}
-	// if cookies[0].Expires.Unix() < time.Now().Unix() {
-	// 	http.Redirect(w, r, "/login", http.StatusUnauthorized)
-	// 	return
-	// }
 
-	user := User{}
-	tasks := make([]Task, 0)
-	err = usersDB.Get(userSession, &user)
+	users := []User{}
+	query := base.FetchInput{
+		Q: base.Query{{"Token": userSession}},
+		Dest: &users,
+	}
+	_, err = usersDB.Fetch(&query)
 	if err != nil {
 		// TODO: Show error page
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	if len(users) != 1 {
+		// TODO: Show error page
+		http.Error(w, "user conflict", http.StatusInternalServerError)
+		return
+	}
+	p.User = users[0]
+	if p.User.Token.Expires.Unix() < time.Now().Unix() {
+		http.Redirect(w, r, "/login", http.StatusUnauthorized)
+		return
+	}
 
-	query := base.FetchInput{
-		Q: base.Query{{"Creator": user.Nick, "ID": id}},
-		Dest: &tasks,
+	query = base.FetchInput{
+		Q: base.Query{{"Creator": p.User.Nick, "ID": id}},
+		Dest: &p.Tasks,
 	}
 	_, err = tasksDB.Fetch(&query)
 	if err != nil {
@@ -164,7 +193,7 @@ func task(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var t Task
-	for _, i := range tasks {
+	for _, i := range p.Tasks {
 		if i.ID == id {
 			t = i
 			break
@@ -203,7 +232,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 	query := base.FetchInput{
 		Q: base.Query{{"Nick": user.Nick, "Pass": user.Pass}},
 		Dest: &dbUsers,
-		Limit: 1,
 	}
 	_, err = usersDB.Fetch(&query)
 	if err != nil {
@@ -215,7 +243,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "user not found", http.StatusUnauthorized)
 		return
 	}
-	key := dbUsers[0].Key
 
 	t := make([]byte, 128)
 	_, err = rand.Read(t)
@@ -226,8 +253,12 @@ func login(w http.ResponseWriter, r *http.Request) {
 	for i, n := range t {
 		t[i] = chars[int(n)%len(chars)]
 	}
+	token := Token{
+		Value: string(t),
+		Expires: time.Now().Add(120 * time.Hour),
+	}
 
-	err = usersDB.Update(key, base.Updates{"Token": string(t)})
+	err = usersDB.Update(dbUsers[0].Key, base.Updates{"Token": token})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -237,11 +268,11 @@ func login(w http.ResponseWriter, r *http.Request) {
 		w,
 		&http.Cookie{
 			Name:     "token",
-			Value:    key,
+			Value:    string(t),
 			Domain:   "tasker.blmayer.dev",
 			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
-			Expires:  time.Now().Add(120 * time.Hour),
+			Expires:  token.Expires,
 		},
 	)
 
@@ -299,7 +330,10 @@ func register(w http.ResponseWriter, r *http.Request) {
 	for i, n := range token {
 		token[i] = chars[int(n)%len(chars)]
 	}
-	newUser.Key = string(token)
+	newUser.Token = Token{
+		Value: string(token),
+		Expires : time.Now(),
+	}
 
 	_, err = usersDB.Insert(newUser)
 	if err != nil {
@@ -316,7 +350,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 			Domain:   "tasker.blmayer.dev",
 			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
-			Expires:  time.Now().Add(120 * time.Hour),
+			Expires:  newUser.Token.Expires,
 		},
 	)
 	http.Redirect(w, r, "/", http.StatusFound)

@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Tasker</title>
+		<title>Tasker: Manage your tasks with a clean interface, for free.</title>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width,initial-scale=1"/>
-		<meta name="description" content="Dynamically generated task lists. A simple list to make your tasks easy to find."/>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta name="description" content="Dynamically generated task lists. A simple timeline to make your tasks easy to find and update, create an account and organize yourself."/>
+		<meta name="robots" content="index,follow"/>
+		<link rel="canonical" href="https://tasker.blmayer.dev/">
 		<style>
 			{{template "style.css"}}
 		</style>
@@ -14,8 +17,8 @@
 			<h1>Tasks <a href="new">+</a></h1>
 		</header>
 		<main id="tasks">
-			{{range .}}
-				{{.DateCreated.Format "02 Jan 06 15:04"}}
+			{{range .Tasks}}
+				{{.Date.Format "02 Jan 06 15:04"}}
 				<section>
 					<a href="/tasks/{{.ID}}">
 						<li>
@@ -27,7 +30,6 @@
 				</section>
 			{{end}}
 		</main>
-		<footer>
-		</footer>
+		{{template "footer.html" .User}}
 	</body>
 </html>

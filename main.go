@@ -20,11 +20,17 @@ var (
 	tasksDB *base.Base
 )
 
+type Token struct {
+	Value string
+	Expires time.Time
+}
+
 type User struct {
+	Key string `json:"key"`
 	Nick string
 	Email string
 	Pass string
-	Key string `json:"key"`
+	Token Token
 	Configs []interface{}
 }
 
@@ -35,7 +41,7 @@ type Task struct {
 	Summary     string
 	Description string
 	Creator     string
-	DateCreated time.Time
+	Date time.Time
 }
 
 func main() {
