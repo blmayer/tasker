@@ -61,10 +61,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 		pages.ExecuteTemplate(w, "index.html", defaultTasks)
 		return
 	}
-	if cookies[0].Expires.Unix() < time.Now().Unix() {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return
-	}
+	// if cookies[0].Expires.Unix() < time.Now().Unix() {
+	// 	http.Redirect(w, r, "/login", http.StatusUnauthorized)
+	// 	return
+	// }
 
 	user := User{}
 	tasks := make([]Task, 0)
@@ -138,10 +138,10 @@ func task(w http.ResponseWriter, r *http.Request) {
 		pages.ExecuteTemplate(w, "task.html", defaultTasks[4-id])
 		return
 	}
-	if cookies[0].Expires.Unix() < time.Now().Unix() {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return
-	}
+	// if cookies[0].Expires.Unix() < time.Now().Unix() {
+	// 	http.Redirect(w, r, "/login", http.StatusUnauthorized)
+	// 	return
+	// }
 
 	user := User{}
 	tasks := make([]Task, 0)
