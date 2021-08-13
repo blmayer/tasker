@@ -21,5 +21,6 @@ Cloud Run.
 
 ## License
 
-I take no responsibility for any damage caused by this software, use at your
-own risk. Feel free to contribute, fork, clone or distribute.
+MIT License, I take no responsibility for any damage caused by this software,
+use at your own risk. Feel free to contribute, fork, clone or distribute. See
+[LICENSE](https://github.com/blmayer/tasker/blob/main/LICENSE) for details.
