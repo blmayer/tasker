@@ -85,7 +85,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(users) != 1 {
 		// TODO: Show error page
-		http.Error(w, "user conflict", http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", http.StatusUnauthorized)
 		return
 	}
 	p.User = users[0]
@@ -239,7 +239,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 	cookies[0].Expires = time.Now()
 	http.SetCookie(w, cookies[0])
-	pages.ExecuteTemplate(w, "index.html", time.Now())
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
