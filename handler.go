@@ -237,8 +237,10 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookies[0].Value = ""
+	cookies[0].Domain = "tasker.blmayer.dev"
 	cookies[0].Expires = time.Now()
+	cookies[0].MaxAge = 0
+	cookies[0].Path = "/"
 	http.SetCookie(w, cookies[0])
 	http.Redirect(w, r, "/", http.StatusFound)
 }
