@@ -264,6 +264,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sum := sha256.Sum256([]byte(user.Pass))
+	user.Pass = fmt.Sprintf("%x", sum)
+
 	dbUsers := []User{}
 	query := base.FetchInput{
 		Q: base.Query{{"Nick": user.Nick, "Pass": user.Pass}},
@@ -356,6 +359,9 @@ func register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "user already exists", http.StatusUnauthorized)
 		return
 	}
+
+	sum := sha256.Sum256([]byte(newUser.Pass))
+	newUser.Pass = fmt.Sprintf("%x", sum)
 
 	token := make([]byte, 128)
 	_, err = rand.Read(token)
