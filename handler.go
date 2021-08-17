@@ -374,7 +374,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 	newUser.Token = Token{
 		Value: string(token),
-		Expires : time.Now(),
+		Expires: time.Now().Add(120 * time.Hour),
 	}
 
 	_, err = usersDB.Insert(newUser)
