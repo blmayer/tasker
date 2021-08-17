@@ -1,5 +1,14 @@
 <footer>
 	<br/><hr/><br/>
-	<p><a href="/logout">Logout</a></p>
+	{{if .}}
+		<p>Logged in as {{.Nick}}</p>
+		<p><a href="/logout">Logout</a></p>
+		<p><a href="/reset">Reset password</a>(WIP)</p>
+	{{end}}	
+	<p>
+		This work is licensed under the MIT License. The source code is
+		available on <a href="github.com/blmayer/tasker">GitHub</a>.
+	</p>
+	<p>Copyright © 2021 Brian Mayer</p>
 </footer>
 

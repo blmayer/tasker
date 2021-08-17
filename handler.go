@@ -2,6 +2,8 @@ package main
 
 import (
 	"crypto/rand"
+	"crypto/sha256"
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -204,6 +206,40 @@ func task(w http.ResponseWriter, r *http.Request) {
 
 func newTask(w http.ResponseWriter, r *http.Request) {
 	pages.ExecuteTemplate(w, "new.html", time.Now())
+}
+
+func logout(w http.ResponseWriter, r *http.Request) {
+	cookies := r.Cookies()
+	if len(cookies) == 0 {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+	userSession := cookies[0].Value
+	users := []User{}
+	query := base.FetchInput{
+		Q: base.Query{{"Token.Value": userSession}},
+		Dest: &users,
+	}
+	_, err := usersDB.Fetch(&query)
+	if err != nil {
+		// TODO: Show error page
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	token := Token{
+		Expires: time.Now(),
+	}
+
+	err = usersDB.Update(users[0].Key, base.Updates{"Token": token})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	cookies[0].Expires = time.Now()
+	http.SetCookie(w, cookies[0])
+	pages.ExecuteTemplate(w, "index.html", time.Now())
 }
 
 func login(w http.ResponseWriter, r *http.Request) {

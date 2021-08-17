@@ -76,6 +76,7 @@ func main() {
 	http.HandleFunc("/tasks/", task)
 	http.HandleFunc("/new", newTask)
 	http.HandleFunc("/login", login)
+	http.HandleFunc("/logout", logout)
 	http.HandleFunc("/register", register)
 	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
