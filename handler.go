@@ -237,6 +237,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cookies[0].Value = ""
 	cookies[0].Expires = time.Now()
 	http.SetCookie(w, cookies[0])
 	http.Redirect(w, r, "/", http.StatusFound)
