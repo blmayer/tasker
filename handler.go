@@ -140,15 +140,20 @@ func index(w http.ResponseWriter, r *http.Request) {
 	pages.ExecuteTemplate(w, "index.html", p)
 }
 
-func task(w http.ResponseWriter, r *http.Request) {
-	p:= indexPayload{Tasks: defaultTasks}
+func tasks(w http.ResponseWriter, r *http.Request) {
+	p := indexPayload{Tasks: defaultTasks}
 	parts := strings.Split(r.URL.Path, "/")
-	id, err := strconv.Atoi(parts[len(parts)-1])
+	id, err := strconv.Atoi(parts[2])
 	if err != nil {
 		pages.ExecuteTemplate(w, "index.html", p)
 		return
 	}
 	p.Tasks = []Task{}
+
+	page := "task.html"
+	if parts[1] == "edit" {
+		page = "edit.html"
+	}
 
 	cookies := r.Cookies()
 	if len(cookies) != 1 {
@@ -201,11 +206,40 @@ func task(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
-	pages.ExecuteTemplate(w, "task.html", t)
+	pages.ExecuteTemplate(w, page, t)
 }
 
 func newTask(w http.ResponseWriter, r *http.Request) {
 	pages.ExecuteTemplate(w, "new.html", time.Now())
+}
+
+func editTask(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		pages.ExecuteTemplate(w, "index.html", err)
+		return
+	}
+
+	newDate, err := time.Parse(time.RFC3339, r.Form.Get("date"))
+	if err != nil {
+		newDate = time.Now()
+	}
+	id, err := strconv.Atoi(r.Form.Get("id"))
+	t := Task{
+		ID: id,
+		Title:       r.Form.Get("title"),
+		Summary:     r.Form.Get("summary"),
+		Description: r.Form.Get("description"),
+		Status:      r.Form.Get("status"),
+		Creator:     r.Form.Get("creator"),
+		Date: newDate,
+	}
+	go func(){
+		_, err = tasksDB.Put(t)
+		if err != nil {
+			println("put error:",err)
+		}
+	}()
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {

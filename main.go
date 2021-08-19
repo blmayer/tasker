@@ -73,8 +73,10 @@ func main() {
 	}
 
 	http.HandleFunc("/", index)
-	http.HandleFunc("/tasks/", task)
+	http.HandleFunc("/tasks/", tasks)
+	http.HandleFunc("/edit/", tasks)
 	http.HandleFunc("/new", newTask)
+	http.HandleFunc("/edit", editTask)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/logout", logout)
 	http.HandleFunc("/register", register)
