@@ -19,8 +19,10 @@
         </a>
     </header>
     <main id="tasks">
-
-        {{.Date.Format "02 Jan 06 15:04"}}
+	<div>
+        	{{.Date.Format "02 Jan 06 15:04"}}
+		<p><small><a href="/edit/{{.ID}}">edit task</a></small></p>
+	</div>
         <section>
             <li>
                 <h3>#{{.ID}} {{.Title}}</h3>
