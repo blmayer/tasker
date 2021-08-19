@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Editing task</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1"/>
+		<meta name="description" content="Dynamically generated task lists. A simple list to make your tasks easy to find."/>
+		<style>
+			{{template "style.css"}}
+		</style>
+	</head>
+	<body>
+		<header>
+			<a href="/"><h1>Tasks</h1></a>
+		</header>
+		<main>
+			{{.Date.Format "02 Jan 06 15:04"}}
+			<section>
+				<a>
+					<li>
+						<form action="/edit" method="POST">
+							<h3>#{{.ID}} <input name="title" placeholder="Title" size="35" value="{{.Title}}" autofocus required></h3>
+							<p><input name="summary" placeholder="Summary" size="35" value="{{.Summary}}" autofocus></p>
+							<p><textarea name="description" placeholder="Task description" rows="10" cols="40" value="{{.Description}}" required></textarea></p>
+							<p>
+							<select name="status">
+								<option {{if eq .Status "Active"}}selected{{end}} value="Active">Active</option>
+								<option {{if eq .Status "Blocked"}}selected{{end}} value="Blocked">Blocked</option>
+								<option {{if eq .Status "Done"}}selected{{end}} value="Done">Done</option>
+								<option {{if eq .Status "Inactive"}}selected{{end}} value="Inactive">Inactive</option>
+							</select>
+							</p>
+							<input name="date" value="{{.Date.Format "time.RFC3339"}}" hidden>
+							<input name="creator" value="{{.Creator}}" hidden>
+
+							<input type="submit" value="Update"></input>
+						</form>
+					</li>
+				</a>
+			</section>
+		</main>
+
+		<footer>
+		</footer>
+	</body>
+</html>
