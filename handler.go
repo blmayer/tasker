@@ -220,13 +220,14 @@ func editTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newDate, err := time.Parse(time.RFC822Z, r.Form.Get("date"))
+	newDate, err := time.Parse(time.RFC3339, r.Form.Get("date"))
 	if err != nil {
 		newDate = time.Now()
 	}
 	id, err := strconv.Atoi(r.Form.Get("id"))
 	t := Task{
 		ID: id,
+		Key:       r.Form.Get("key"),
 		Title:       r.Form.Get("title"),
 		Summary:     r.Form.Get("summary"),
 		Description: r.Form.Get("description"),
@@ -237,9 +238,10 @@ func editTask(w http.ResponseWriter, r *http.Request) {
 	go func(){
 		_, err = tasksDB.Put(t)
 		if err != nil {
-			println("put error:",err)
+			println("put error:", err)
 		}
 	}()
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {

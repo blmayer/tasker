@@ -35,6 +35,7 @@ type User struct {
 }
 
 type Task struct {
+	Key string `json:"key"`
 	ID          int
 	Title       string
 	Status      string

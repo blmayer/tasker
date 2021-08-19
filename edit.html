@@ -30,7 +30,8 @@
 								<option {{if eq .Status "Inactive"}}selected{{end}} value="Inactive">Inactive</option>
 							</select>
 							</p>
-							<input name="date" value="{{.Date.Format "02 Jan 06 15:04 -0700"}}" hidden>
+							<input name="key" value="{{.Key}}" hidden>
+							<input name="date" value="{{.Date.Format "2006-01-02T15:04:05Z07:00"}}" hidden>
 							<input name="creator" value="{{.Creator}}" hidden>
 
 							<input type="submit" value="Update"></input>
