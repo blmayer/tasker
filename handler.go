@@ -220,7 +220,7 @@ func editTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newDate, err := time.Parse(time.RFC3339, r.Form.Get("date"))
+	newDate, err := time.Parse(time.RFC822Z, r.Form.Get("date"))
 	if err != nil {
 		newDate = time.Now()
 	}
