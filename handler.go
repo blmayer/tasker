@@ -59,14 +59,6 @@ Alice   | 23
 ~~striked~~ through text using tildes: `+"`~~`"+`, using
 footnotes[^1] is encouraged.
 
-And last, Math support!
-
-$$
-\int_C \frac{f(z)}{(z-a)^{n+1}} dz=\frac{2i\pi}{ n!}f^{(n)}(a)
-$$
-
-That's my favorite.
-
 ### Updating tasks
 There is a small link, edit task, below the date when you
 are seeing a task.
@@ -192,7 +184,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	})
 
 	for i, t := range p.Tasks {
-		md := markdown.ToHTML([]byte(t.Description), nil, nil)
+		md := markdown.ToHTML([]byte(t.Description), mdParser, nil)
 		p.Tasks[i].Description = string(md)
 	}
 
@@ -260,7 +252,8 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 
 	t := p.Tasks[0]
 	if page == "task.html" {
-		t.Description = string(markdown.ToHTML([]byte(t.Description), nil, nil))
+		md := markdown.ToHTML([]byte(t.Description), mdParser, nil)
+		t.Description = string(md)
 	}
 	pages.ExecuteTemplate(w, page, t)
 }
