@@ -21,7 +21,10 @@
     <main id="tasks">
 	<div>
         	{{.Date.Format "02 Jan 06 15:04"}}
-		<p><small><a href="/edit/{{.ID}}">edit task</a></small></p>
+		<p>
+			<a href="/edit/{{.ID}}"><small>edit</small></a><br>
+			<a href="/delete/{{.ID}}"><small>delete</small></a>
+		</p>
 	</div>
         <section>
             <li>

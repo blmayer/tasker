@@ -20,6 +20,11 @@ section {
 	padding: 10px 0px 0px 10px;
 }
 
+article {
+	font-family: Arial;
+	color: #666;
+}
+
 li {
 	padding-left: 20px;
 }
@@ -53,6 +58,11 @@ input:focus, textarea:focus {
 		color: #eee;
 		background: #151515;
 	}
+
+	article {
+		color: #ccc;
+	}
+	
 	a {
 		color: #ffffff;
 	}
