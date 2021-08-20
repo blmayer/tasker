@@ -10,6 +10,8 @@ import (
 	"github.com/deta/deta-go/deta"
 	"github.com/deta/deta-go/service/base"
 
+	"github.com/gomarkdown/markdown"
+
 	"github.com/microcosm-cc/bluemonday"
 )
 
@@ -75,6 +77,11 @@ func main() {
 	tasksDB, err = base.New(d, "tasks")
 	if err != nil {
 		println("deta base error:", err)
+	}
+
+	for i, t := range defaultTasks {
+		md := markdown.ToHTML([]byte(t.Description), nil, nil)
+		defaultTasks[i].Description = string(md)
 	}
 
 	http.HandleFunc("/", index)
