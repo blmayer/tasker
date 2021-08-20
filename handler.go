@@ -63,6 +63,13 @@ footnotes[^1] is encouraged.
 There is a small link, edit task, below the date when you
 are seeing a task.
 
+### Notes
+This site doesn't use JavaScript, it try to make it as simple as possible,
+so authentication uses cookies, but with a strict security, to create a
+session.
+
+***
+
 [^1] See https://daringfireball.net/projects/markdown/
 to learn more.
 `,
