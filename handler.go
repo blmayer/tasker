@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gomarkdown/markdown"
+
 	"github.com/deta/deta-go/service/base"
 )
 
@@ -115,10 +117,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 		t := Task{
 			ID: len(p.Tasks),
-			Title:       r.Form.Get("title"),
-			Summary:     r.Form.Get("summary"),
-			Description: r.Form.Get("description"),
-			Status:      r.Form.Get("status"),
+			Title:       pol.Sanitize(r.Form.Get("title")),
+			Summary:     pol.Sanitize(r.Form.Get("summary")),
+			Description: pol.Sanitize(r.Form.Get("description")),
+			Status:      pol.Sanitize(r.Form.Get("status")),
 			Creator:     p.User.Nick,
 			Date: time.Now(),
 		}
@@ -136,6 +138,11 @@ func index(w http.ResponseWriter, r *http.Request) {
 	sort.SliceStable(p.Tasks, func(i, j int) bool {
 		return p.Tasks[i].Date.Unix() > p.Tasks[j].Date.Unix()
 	})
+
+	for i, t := range p.Tasks {
+		md := markdown.ToHTML([]byte(t.Description), nil, nil)
+		p.Tasks[i].Description = string(md)
+	}
 
 	pages.ExecuteTemplate(w, "index.html", p)
 }
@@ -199,12 +206,9 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var t Task
-	for _, i := range p.Tasks {
-		if i.ID == id {
-			t = i
-			break
-		}
+	t := p.Tasks[0]
+	if page == "task.html" {
+		t.Description = string(markdown.ToHTML([]byte(t.Description), nil, nil))
 	}
 	pages.ExecuteTemplate(w, page, t)
 }
@@ -226,14 +230,14 @@ func editTask(w http.ResponseWriter, r *http.Request) {
 	}
 	id, err := strconv.Atoi(r.Form.Get("id"))
 	t := Task{
-		ID: id,
-		Key:       r.Form.Get("key"),
-		Title:       r.Form.Get("title"),
-		Summary:     r.Form.Get("summary"),
-		Description: r.Form.Get("description"),
-		Status:      r.Form.Get("status"),
-		Creator:     r.Form.Get("creator"),
-		Date: newDate,
+		ID:          id,
+		Key:         pol.Sanitize(r.Form.Get("key")),
+		Title:       pol.Sanitize(r.Form.Get("title")),
+		Summary:     pol.Sanitize(r.Form.Get("summary")),
+		Description: pol.Sanitize(r.Form.Get("description")),
+		Status:      pol.Sanitize(r.Form.Get("status")),
+		Creator:     pol.Sanitize(r.Form.Get("creator")),
+		Date:        newDate,
 	}
 	go func(){
 		_, err = tasksDB.Put(t)
@@ -371,8 +375,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUser := User{
-		Email: r.Form.Get("email"),
-		Nick:  r.Form.Get("username"),
+		Email: pol.Sanitize(r.Form.Get("email")),
+		Nick:  pol.Sanitize(r.Form.Get("username")),
 		Pass:  r.Form.Get("password"),
 	}
 	if newUser.Email == "" || newUser.Nick == "" || newUser.Pass == "" {

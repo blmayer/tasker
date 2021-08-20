@@ -9,6 +9,8 @@ import (
 
 	"github.com/deta/deta-go/deta"
 	"github.com/deta/deta-go/service/base"
+
+	"github.com/microcosm-cc/bluemonday"
 )
 
 var (
@@ -18,6 +20,8 @@ var (
 	pages *template.Template
 	usersDB *base.Base
 	tasksDB *base.Base
+
+	pol = bluemonday.UGCPolicy()
 )
 
 type Token struct {
