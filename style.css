@@ -1,3 +1,8 @@
+html {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
 body {
 	padding: 10px;
 	margin: 0 auto;
