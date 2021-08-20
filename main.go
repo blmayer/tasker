@@ -11,7 +11,6 @@ import (
 	"github.com/deta/deta-go/service/base"
 
 	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/parser"
 
 	"github.com/microcosm-cc/bluemonday"
 )
@@ -25,7 +24,6 @@ var (
 	tasksDB *base.Base
 
 	pol = bluemonday.UGCPolicy()
-	mdParser = parser.NewWithExtensions(parser.CommonExtensions|parser.Footnotes)
 )
 
 type Token struct {
@@ -82,7 +80,7 @@ func main() {
 	}
 
 	for i, t := range defaultTasks {
-		md := markdown.ToHTML([]byte(t.Description), mdParser, nil)
+		md := markdown.ToHTML([]byte(t.Description), nil, nil)
 		defaultTasks[i].Description = string(md)
 	}
 

@@ -56,22 +56,19 @@ Alice   | 23
 
 `+"```"+`
 
-~~striked~~ through text using tildes: `+"`~~`"+`, using
-footnotes[^1] is encouraged.
+~~striked~~ through text using tildes: `+"`~~`"+`.
 
 ### Updating tasks
-There is a small link, edit task, below the date when you
-are seeing a task.
+There is a small link, edit task, below the date when you are seeing a task.
 
 ### Notes
-This site doesn't use JavaScript, it try to make it as simple as possible,
+This site doesn't use JavaScript, I try to make it as simple as possible,
 so authentication uses cookies, but with a strict security, to create a
 session.
 
 ***
 
-[^1] See https://daringfireball.net/projects/markdown/
-to learn more.
+See https://daringfireball.net/projects/markdown/ to learn more.
 `,
 		Status:      "Active",
 		Creator:     "blmayer",
@@ -191,7 +188,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	})
 
 	for i, t := range p.Tasks {
-		md := markdown.ToHTML([]byte(t.Description), mdParser, nil)
+		md := markdown.ToHTML([]byte(t.Description), nil, nil)
 		p.Tasks[i].Description = string(md)
 	}
 
@@ -259,7 +256,7 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 
 	t := p.Tasks[0]
 	if page == "task.html" {
-		md := markdown.ToHTML([]byte(t.Description), mdParser, nil)
+		md := markdown.ToHTML([]byte(t.Description), nil, nil)
 		t.Description = string(md)
 	}
 	pages.ExecuteTemplate(w, page, t)
