@@ -19,13 +19,17 @@
 		<main>
 			<div>
 				{{.CreateDate.Format "02 Jan 06 15:04"}}
+				<p>
+					<a href="/logout"><small>logout</small></a>
+					<a href="/reset"><small>reset password</small></a>
+				</p>
 			</div>
 			<section>
 				<li>
 					<h3>#X {{.Nick}}</h3>
 					<p><b>{{.Email}}</b></p>
 					<article>
-						## Settings
+						<h3>Settings</h3>
 						{{range .Configs}}
 							- {{.}}
 						{{end}}
@@ -34,8 +38,6 @@
 				</li>
 			</section>
 		</main>
-		<p><a href="/logout">Logout</a></p>
-		<p><a href="/reset">Reset password</a> (WIP)</p>
 	</body>
 
 </html>
