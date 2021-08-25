@@ -221,8 +221,19 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func profile(w http.ResponseWriter, r *http.Request) {
-	pages.ExecuteTemplate(w, "profile.html", time.Now())
+	cookies := r.Cookies()
+	if len(cookies) != 1 {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	user, err := getUserFromCookie(*cookies[0])
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	pages.ExecuteTemplate(w, "profile.html", user)
 }
+
 func newTask(w http.ResponseWriter, r *http.Request) {
 	pages.ExecuteTemplate(w, "new.html", time.Now())
 }
