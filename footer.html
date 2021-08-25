@@ -1,9 +1,7 @@
 <footer>
 	<br/><hr/><br/>
 	{{if .Nick}}
-		<p>Logged in as {{.Nick}}</p>
-		<p><a href="/logout">Logout</a></p>
-		<p><a href="/reset">Reset password</a> (WIP)</p>
+		<p>Logged in as <a href="/profile">{{.Nick}}</a></p>
 	{{end}}	
 	<p>
 		This work is licensed under the MIT License. The source code

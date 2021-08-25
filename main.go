@@ -37,6 +37,7 @@ type User struct {
 	Email string
 	Pass string
 	Token Token
+	CreateDate time.Time
 	Configs []interface{}
 }
 
@@ -85,6 +86,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", index)
+	http.HandleFunc("/profile", profile)
 	http.HandleFunc("/tasks/", tasks)
 	http.HandleFunc("/edit/", tasks)
 	http.HandleFunc("/new", newTask)

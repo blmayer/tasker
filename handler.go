@@ -116,36 +116,16 @@ func index(w http.ResponseWriter, r *http.Request) {
 		pages.ExecuteTemplate(w, "index.html", p)
 		return
 	}
-	userSession := cookies[0].Value
-	if userSession == "" {
-		pages.ExecuteTemplate(w, "index.html", p)
-		return
-	}
-
-	users := []User{}
-	query := base.FetchInput{
-		Q: base.Query{{"Token.Value": userSession}},
-		Dest: &users,
-	}
-	_, err := usersDB.Fetch(&query)
+	user, err := getUserFromCookie(*cookies[0])
 	if err != nil {
 		// TODO: Show error page
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	if len(users) != 1 {
-		// TODO: Show error page
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return
-	}
-	p.User = users[0]
-	if p.User.Token.Expires.Unix() < time.Now().Unix() {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
-		return
-	}
+	p.User = user
 
 	p.Tasks = []Task{}
-	query = base.FetchInput{
+	query := base.FetchInput{
 		Q: base.Query{{"Creator": p.User.Nick}},
 		Dest: &p.Tasks,
 	}
@@ -198,6 +178,11 @@ func index(w http.ResponseWriter, r *http.Request) {
 func tasks(w http.ResponseWriter, r *http.Request) {
 	p := indexPayload{Tasks: defaultTasks}
 	parts := strings.Split(r.URL.Path, "/")
+	page := "task.html"
+	if parts[1] == "edit" {
+		page = "edit.html"
+	}
+
 	id, err := strconv.Atoi(parts[2])
 	if err != nil {
 		pages.ExecuteTemplate(w, "index.html", p)
@@ -205,45 +190,18 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 	}
 	p.Tasks = []Task{}
 
-	page := "task.html"
-	if parts[1] == "edit" {
-		page = "edit.html"
-	}
-
 	cookies := r.Cookies()
 	if len(cookies) != 1 {
 		pages.ExecuteTemplate(w, "task.html", defaultTasks[4-id])
 		return
 	}
-	userSession := cookies[0].Value
-	if userSession == "" {
-		pages.ExecuteTemplate(w, "task.html", defaultTasks[4-id])
-		return
-	}
-
-	users := []User{}
-	query := base.FetchInput{
-		Q: base.Query{{"Token.Value": userSession}},
-		Dest: &users,
-	}
-	_, err = usersDB.Fetch(&query)
+	p.User, err = getUserFromCookie(*cookies[0])
 	if err != nil {
-		// TODO: Show error page
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if len(users) != 1 {
-		// TODO: Show error page
-		http.Error(w, "user conflict", http.StatusInternalServerError)
-		return
-	}
-	p.User = users[0]
-	if p.User.Token.Expires.Unix() < time.Now().Unix() {
-		http.Redirect(w, r, "/login", http.StatusUnauthorized)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
-	query = base.FetchInput{
+	query := base.FetchInput{
 		Q: base.Query{{"Creator": p.User.Nick, "ID": id}},
 		Dest: &p.Tasks,
 	}
@@ -262,6 +220,9 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 	pages.ExecuteTemplate(w, page, t)
 }
 
+func profile(w http.ResponseWriter, r *http.Request) {
+	pages.ExecuteTemplate(w, "profile.html", time.Now())
+}
 func newTask(w http.ResponseWriter, r *http.Request) {
 	pages.ExecuteTemplate(w, "new.html", time.Now())
 }
@@ -303,15 +264,8 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
-	userSession := cookies[0].Value
-	users := []User{}
-	query := base.FetchInput{
-		Q: base.Query{{"Token.Value": userSession}},
-		Dest: &users,
-	}
-	_, err := usersDB.Fetch(&query)
+	user, err := getUserFromCookie(*cookies[0])
 	if err != nil {
-		// TODO: Show error page
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -320,7 +274,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		Expires: time.Now(),
 	}
 
-	err = usersDB.Update(users[0].Key, base.Updates{"Token": token})
+	err = usersDB.Update(user.Key, base.Updates{"Token": token})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -427,13 +381,13 @@ func register(w http.ResponseWriter, r *http.Request) {
 		Email: pol.Sanitize(r.Form.Get("email")),
 		Nick:  pol.Sanitize(r.Form.Get("username")),
 		Pass:  r.Form.Get("password"),
+		CreateDate: time.Now(),
 	}
 	if newUser.Email == "" || newUser.Nick == "" || newUser.Pass == "" {
 		// TODO: Same error page
 		http.Error(w, "empty fields", http.StatusBadRequest)
 		return
 	}
-
 
 	dbUsers := []User{}
 	query := base.FetchInput{
@@ -488,4 +442,29 @@ func register(w http.ResponseWriter, r *http.Request) {
 		},
 	)
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func getUserFromCookie(c http.Cookie) (User, error) {
+	userSession := c.Value
+	if userSession == "" {
+		return User{}, fmt.Errorf("empty value")
+	}
+
+	users := []User{}
+	query := base.FetchInput{
+		Q: base.Query{{"Token.Value": userSession}},
+		Dest: &users,
+	}
+	_, err := usersDB.Fetch(&query)
+	if err != nil {
+		return User{}, err
+	}
+	if len(users) == 0 {
+		return User{}, fmt.Errorf("user not found")
+	}
+
+	if users[0].Token.Expires.Unix() < time.Now().Unix() {
+		return User{}, fmt.Errorf("token expired")
+	}
+	return users[0], nil
 }
