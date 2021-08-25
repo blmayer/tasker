@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<title>Tasker</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta name="description"
+		      content="Dynamically generated task lists. A simple list to make your tasks easy to find." />
+		<style>
+{{template "style.css"}}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<a href="/"><h1>Tasks</h1></a>
+		</header>
+		<main>
+			<div>
+				{{.CreateDate.Format "02 Jan 06 15:04"}}
+			</div>
+			<section>
+				<li>
+					<h3>#X {{.Nick}}</h3>
+					<p><b>{{.Email}}</b></p>
+					<article>
+						## Settings
+						{{range .Configs}}
+							- {{.}}
+						{{end}}
+					</article>
+					<p><em>Active</em></p>
+				</li>
+			</section>
+		</main>
+		<p><a href="/logout">Logout</a></p>
+		<p><a href="/reset">Reset password</a> (WIP)</p>
+	</body>
+
+</html>
