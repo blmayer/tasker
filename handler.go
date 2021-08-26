@@ -75,19 +75,22 @@ See https://daringfireball.net/projects/markdown/ to learn more.
 		Date:    time.Now().Add(-10 * time.Second),
 	},
 	{
-		ID:          3,
-		Title:       "Make your login",
-		Summary:     "This task has a link for the login page.",
-		Description: `I'm glad you made your registration. Here is the link: <a href="/login">login page</a>.`,
-		Status:      "Blocked",
-		Creator:     "blmayer",
-		Date:        time.Now().Add(-12 * time.Hour),
+		ID:      3,
+		Title:   "Make your login",
+		Summary: "This task has a link for the login page.",
+		Description: `<p>I'm glad you made your registration. Here is the
+link: <a href="/login">login page</a>.</p>
+<p>But if you forgot the password use this link:
+<a href="/reset">reset password</a>.</p>`,
+		Status:  "Blocked",
+		Creator: "blmayer",
+		Date:    time.Now().Add(-12 * time.Hour),
 	},
 	{
 		ID:          2,
 		Title:       "Create your user",
 		Summary:     "The description of this task has a link to the registration page.",
-		Description: `Here is the link: <a href="/register">registration page</a>. Welcome!`,
+		Description: `<p>Here is the link: <a href="/register">registration page</a>. Welcome!</p>`,
 		Status:      "Active",
 		Creator:     "blmayer",
 		Date:        time.Now().Add(-30 * time.Hour),
