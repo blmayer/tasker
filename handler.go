@@ -19,9 +19,9 @@ const chars = "ABCDEFGHIJKLMNOPQRSTUVWabcdefghijklmnopqrstuvw1234567890/_."
 
 var defaultTasks = []Task{
 	{
-		ID:          4,
-		Title:       "Learn to use this",
-		Summary:     "This task has a tutorial.",
+		ID:      4,
+		Title:   "Learn to use this",
+		Summary: "This task has a tutorial.",
 		Description: `# Welcome!
 Thank you for taking your time using this, I've done it for
 my own needs but decided to open it as a web service. So
@@ -48,15 +48,15 @@ Bob     | 27
 Alice   | 23
 
 Can be entered by typing:
-`+"```"+`
+` + "```" + `
 Name    | Age
 --------|------
 Bob     | 27
 Alice   | 23
 
-`+"```"+`
+` + "```" + `
 
-~~striked~~ through text using tildes: `+"`~~`"+`.
+~~striked~~ through text using tildes: ` + "`~~`" + `.
 
 ### Updating tasks
 There is a small link, edit task, below the date when you are seeing a task.
@@ -70,9 +70,9 @@ session.
 
 See https://daringfireball.net/projects/markdown/ to learn more.
 `,
-		Status:      "Active",
-		Creator:     "blmayer",
-		Date: time.Now().Add(-10 * time.Second),
+		Status:  "Active",
+		Creator: "blmayer",
+		Date:    time.Now().Add(-10 * time.Second),
 	},
 	{
 		ID:          3,
@@ -81,7 +81,7 @@ See https://daringfireball.net/projects/markdown/ to learn more.
 		Description: `I'm glad you made your registration. Here is the link: <a href="/login">login page</a>.`,
 		Status:      "Blocked",
 		Creator:     "blmayer",
-		Date: time.Now().Add(-12 * time.Hour),
+		Date:        time.Now().Add(-12 * time.Hour),
 	},
 	{
 		ID:          2,
@@ -90,21 +90,21 @@ See https://daringfireball.net/projects/markdown/ to learn more.
 		Description: `Here is the link: <a href="/register">registration page</a>. Welcome!`,
 		Status:      "Active",
 		Creator:     "blmayer",
-		Date: time.Now().Add(-30 * time.Hour),
+		Date:        time.Now().Add(-30 * time.Hour),
 	},
 	{
-		ID:          1,
-		Title:       "Find this website",
-		Summary:     "Congratulations! You found this task manager.",
-		Status:      "Done",
-		Creator:     "blmayer",
-		Date: time.Now().Add(-48 * time.Hour),
+		ID:      1,
+		Title:   "Find this website",
+		Summary: "Congratulations! You found this task manager.",
+		Status:  "Done",
+		Creator: "blmayer",
+		Date:    time.Now().Add(-48 * time.Hour),
 	},
 }
 
 type indexPayload struct {
 	Tasks []Task
-	User User
+	User  User
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +126,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 	p.Tasks = []Task{}
 	query := base.FetchInput{
-		Q: base.Query{{"Creator": p.User.Nick}},
+		Q:    base.Query{{"Creator": p.User.Nick}},
 		Dest: &p.Tasks,
 	}
 	_, err = tasksDB.Fetch(&query)
@@ -144,20 +144,20 @@ func index(w http.ResponseWriter, r *http.Request) {
 		}
 
 		t := Task{
-			ID: len(p.Tasks),
+			ID:          len(p.Tasks),
 			Title:       pol.Sanitize(r.Form.Get("title")),
 			Summary:     pol.Sanitize(r.Form.Get("summary")),
 			Description: pol.Sanitize(r.Form.Get("description")),
 			Status:      pol.Sanitize(r.Form.Get("status")),
 			Creator:     p.User.Nick,
-			Date: time.Now(),
+			Date:        time.Now(),
 		}
 		p.Tasks = append(p.Tasks, t)
 
-		go func(){
+		go func() {
 			_, err = tasksDB.Put(t)
 			if err != nil {
-				println("put error:",err)
+				println("put error:", err)
 			}
 		}()
 	}
@@ -202,7 +202,7 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := base.FetchInput{
-		Q: base.Query{{"Creator": p.User.Nick, "ID": id}},
+		Q:    base.Query{{"Creator": p.User.Nick, "ID": id}},
 		Dest: &p.Tasks,
 	}
 	_, err = tasksDB.Fetch(&query)
@@ -260,7 +260,7 @@ func editTask(w http.ResponseWriter, r *http.Request) {
 		Creator:     pol.Sanitize(r.Form.Get("creator")),
 		Date:        newDate,
 	}
-	go func(){
+	go func() {
 		_, err = tasksDB.Put(t)
 		if err != nil {
 			println("put error:", err)
@@ -562,8 +562,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 
 	dbUsers := []User{}
 	query := base.FetchInput{
-		Q: base.Query{{"Nick": newUser.Nick}, {"Email": newUser.Email}},
-		Dest: &dbUsers,
+		Q:     base.Query{{"Nick": newUser.Nick}, {"Email": newUser.Email}},
+		Dest:  &dbUsers,
 		Limit: 1,
 	}
 	_, err = usersDB.Fetch(&query)
@@ -590,7 +590,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 		token[i] = chars[int(n)%len(chars)]
 	}
 	newUser.Token = Token{
-		Value: string(token),
+		Value:   string(token),
 		Expires: time.Now().Add(120 * time.Hour),
 	}
 
@@ -623,7 +623,7 @@ func getUserFromCookie(c http.Cookie) (User, error) {
 
 	users := []User{}
 	query := base.FetchInput{
-		Q: base.Query{{"Token.Value": userSession}},
+		Q:    base.Query{{"Token.Value": userSession}},
 		Dest: &users,
 	}
 	_, err := usersDB.Fetch(&query)

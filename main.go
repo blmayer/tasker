@@ -19,7 +19,7 @@ var (
 	//go:embed *.html *.css
 	content embed.FS
 
-	pages *template.Template
+	pages   *template.Template
 	usersDB *base.Base
 	tasksDB *base.Base
 
@@ -27,29 +27,29 @@ var (
 )
 
 type Token struct {
-	Value string
+	Value   string
 	Expires time.Time
 }
 
 type User struct {
-	Key string `json:"key"`
-	Nick string
-	Email string
-	Pass string
-	Token Token
+	Key        string `json:"key"`
+	Nick       string
+	Email      string
+	Pass       string
+	Token      Token
 	CreateDate time.Time
-	Configs []interface{}
+	Configs    []interface{}
 }
 
 type Task struct {
-	Key string `json:"key"`
+	Key         string `json:"key"`
 	ID          int
 	Title       string
 	Status      string
 	Summary     string
 	Description string
 	Creator     string
-	Date time.Time
+	Date        time.Time
 }
 
 func main() {
