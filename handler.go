@@ -315,8 +315,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := User{
-		Nick: r.Form.Get("nick"),
-		Pass: r.Form.Get("password"),
+		Nick:       r.Form.Get("nick"),
+		Pass:       r.Form.Get("password"),
+		CreateDate: time.Now(),
 	}
 	if user.Nick == "" || user.Pass == "" {
 		// TODO: Same error page

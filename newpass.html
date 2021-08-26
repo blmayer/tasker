@@ -19,7 +19,7 @@
         </a>
     </header>
     <main>
-        {{.Format "02 Jan 06 15:04"}}
+        {{.CreateDate.Format "02 Jan 06 15:04"}}
         <section>
             <a>
                 <li>
@@ -32,7 +32,7 @@
                             <input type="password" name="password" placeholder="Password" size="35" autofocus required>
                         </p>
 			            <p><em>Active</em></p>
-                        <input type="submit" value="Update"></input>
+                        <input type="submit" value="Update">
                     </form>
                 </li>
             </a>
