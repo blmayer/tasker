@@ -485,8 +485,8 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := User{
-		Email: pol.Sanitize(r.Form.Get("email")),
-		Nick:  pol.Sanitize(r.Form.Get("nick")),
+		Email: r.Form.Get("email"),
+		Nick:  r.Form.Get("nick"),
 	}
 	if user.Email == "" || user.Nick == "" {
 		// TODO: Same error page
@@ -528,10 +528,10 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 		"Pass":  string(pass),
 		"Token": nil,
 	}
-	err = usersDB.Update(user.Key, up)
+	err = usersDB.Update(dbUsers[0].Key, up)
 	if err != nil {
 		// TODO: Same error page
-		http.Error(w, "empty fields", http.StatusBadRequest)
+		http.Error(w, "update "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
