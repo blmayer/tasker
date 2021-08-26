@@ -490,7 +490,7 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 	}
 	if user.Email == "" || user.Nick == "" {
 		// TODO: Same error page
-		http.Error(w, "empty fields", http.StatusBadRequest)
+		http.Error(w, "empty email or nick", http.StatusBadRequest)
 		return
 	}
 
