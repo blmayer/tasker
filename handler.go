@@ -321,12 +321,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sum := sha256.Sum256([]byte(user.Pass))
-	user.Pass = fmt.Sprintf("%x", sum)
-
 	dbUsers := []User{}
 	query := base.FetchInput{
-		Q:    base.Query{{"Nick": user.Nick, "Pass": user.Pass}},
+		Q:    base.Query{{"Nick": user.Nick}},
 		Dest: &dbUsers,
 	}
 	_, err = usersDB.Fetch(&query)
@@ -340,6 +337,19 @@ func login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(user.Pass) == 4 && user.Pass == dbUsers[0].Pass {
+		pages.ExecuteTemplate(w, "newpass.html", user)
+		return
+	}
+
+	sum := sha256.Sum256([]byte(user.Pass))
+	user.Pass = fmt.Sprintf("%x", sum)
+
+	if user.Pass != dbUsers[0].Pass {
+		http.Error(w, "wrong password", http.StatusUnauthorized)
+		return
+	}
+
 	t := make([]byte, 128)
 	_, err = rand.Read(t)
 	if err != nil {
@@ -350,7 +360,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		t[i] = chars[int(n)%len(chars)]
 	}
 	token := Token{
-		Value: string(t),
+		Value:   string(t),
 		Expires: time.Now().Add(120 * time.Hour),
 	}
 
@@ -373,6 +383,156 @@ func login(w http.ResponseWriter, r *http.Request) {
 	)
 
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func newPass(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		pages.ExecuteTemplate(w, "login.html", time.Now())
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		pages.ExecuteTemplate(w, "index.html", err)
+		return
+	}
+
+	temp := r.Form.Get("temp")
+	user := User{
+		Nick: r.Form.Get("nick"),
+		Pass: r.Form.Get("password"),
+	}
+	if user.Nick == "" || user.Pass == "" || temp == "" {
+		// TODO: Same error page
+		http.Error(w, "empty fields", http.StatusBadRequest)
+		return
+	}
+
+	dbUsers := []User{}
+	query := base.FetchInput{
+		Q:    base.Query{{"Nick": user.Nick}},
+		Dest: &dbUsers,
+	}
+	_, err = usersDB.Fetch(&query)
+	if err != nil {
+		// TODO: Show error page
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if len(dbUsers) == 0 {
+		http.Error(w, "user not found", http.StatusUnauthorized)
+		return
+	}
+
+	if temp != dbUsers[0].Pass {
+		http.Error(w, "wrong temp password", http.StatusUnauthorized)
+		return
+	}
+
+	t := make([]byte, 128)
+	_, err = rand.Read(t)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	for i, n := range t {
+		t[i] = chars[int(n)%len(chars)]
+	}
+	token := Token{
+		Value:   string(t),
+		Expires: time.Now().Add(120 * time.Hour),
+	}
+
+	sum := sha256.Sum256([]byte(user.Pass))
+	user.Pass = fmt.Sprintf("%x", sum)
+
+	up := base.Updates{"Pass": user.Pass, "Token": token}
+	err = usersDB.Update(dbUsers[0].Key, up)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(
+		w,
+		&http.Cookie{
+			Name:     "token",
+			Value:    string(t),
+			Domain:   "tasker.blmayer.dev",
+			Secure:   true,
+			SameSite: http.SameSiteStrictMode,
+			Expires:  token.Expires,
+		},
+	)
+
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+func resetPass(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		pages.ExecuteTemplate(w, "reset.html", time.Now())
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		// TODO: Print error to an html page
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	user := User{
+		Email: pol.Sanitize(r.Form.Get("email")),
+		Nick:  pol.Sanitize(r.Form.Get("nick")),
+	}
+	if user.Email == "" || user.Nick == "" {
+		// TODO: Same error page
+		http.Error(w, "empty fields", http.StatusBadRequest)
+		return
+	}
+
+	dbUsers := []User{}
+	query := base.FetchInput{
+		Q:     base.Query{{"Nick": user.Nick}, {"Email": user.Email}},
+		Dest:  &dbUsers,
+		Limit: 1,
+	}
+	_, err = usersDB.Fetch(&query)
+	if err != nil {
+		// TODO: Show error page
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if len(dbUsers) == 0 {
+		// TODO: Show error page
+		http.Error(w, "user not found", http.StatusUnauthorized)
+		return
+	}
+
+	pass := make([]byte, 4)
+	_, err = rand.Read(pass)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	for i, n := range pass {
+		pass[i] = chars[int(n)%len(chars)]
+	}
+
+	go sendEmail(user.Email, user.Nick, string(pass))
+
+	up := base.Updates{
+		"Pass":  string(pass),
+		"Token": nil,
+	}
+	err = usersDB.Update(user.Key, up)
+	if err != nil {
+		// TODO: Same error page
+		http.Error(w, "empty fields", http.StatusBadRequest)
+		return
+	}
+
+	http.Redirect(w, r, "/login", http.StatusFound)
 }
 
 func register(w http.ResponseWriter, r *http.Request) {

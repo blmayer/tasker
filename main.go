@@ -86,14 +86,17 @@ func main() {
 	}
 
 	http.HandleFunc("/", index)
-	http.HandleFunc("/profile", profile)
 	http.HandleFunc("/tasks/", tasks)
 	http.HandleFunc("/edit/", tasks)
 	http.HandleFunc("/new", newTask)
 	http.HandleFunc("/edit", editTask)
+
+	http.HandleFunc("/register", register)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/logout", logout)
-	http.HandleFunc("/register", register)
+	http.HandleFunc("/profile", profile)
+	http.HandleFunc("/reset", resetPass)
+	http.HandleFunc("/newpass", newPass)
 	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		panic(err)
