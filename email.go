@@ -6,9 +6,10 @@ import (
 )
 
 func sendEmail(email, nick, pass string) {
+	account := os.Getenv("EMAIL_ACCOUNT")
 	from := os.Getenv("EMAIL_FROM")
 	fromPass := os.Getenv("EMAIL_PASS")
-	auth := smtp.PlainAuth("", from, fromPass, "smtp.gmail.com")
+	auth := smtp.PlainAuth("", account, fromPass, "smtp.gmail.com")
 
 	to := []string{email}
 	msg := []byte("To: " + email + "\r\n" +
