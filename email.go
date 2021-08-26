@@ -6,13 +6,13 @@ import (
 )
 
 func sendEmail(email, nick, pass string) {
-	account := os.Getenv("EMAIL_ACCOUNT")
 	from := os.Getenv("EMAIL_FROM")
 	fromPass := os.Getenv("EMAIL_PASS")
-	auth := smtp.PlainAuth("", account, fromPass, "smtp.gmail.com")
+	auth := smtp.PlainAuth("", from, fromPass, "smtp.gmail.com")
 
 	to := []string{email}
-	msg := []byte("To: " + email + "\r\n" +
+	msg := []byte("Reply-To: tasker@blmayer.dev\r\n" +
+		"To: " + email + "\r\n" +
 		"Subject: Tasker password reset for " + nick + " \r\n" +
 		"\r\n" +
 		"Dear tasker user.\r\n" +
