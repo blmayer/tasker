@@ -312,8 +312,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := User{
-		Nick: r.Form.Get("username"),
-		Pass:  r.Form.Get("password"),
+		Nick: r.Form.Get("nick"),
+		Pass: r.Form.Get("password"),
 	}
 	if user.Nick == "" || user.Pass == "" {
 		// TODO: Same error page
@@ -326,7 +326,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	dbUsers := []User{}
 	query := base.FetchInput{
-		Q: base.Query{{"Nick": user.Nick, "Pass": user.Pass}},
+		Q:    base.Query{{"Nick": user.Nick, "Pass": user.Pass}},
 		Dest: &dbUsers,
 	}
 	_, err = usersDB.Fetch(&query)
@@ -389,9 +389,9 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newUser := User{
-		Email: pol.Sanitize(r.Form.Get("email")),
-		Nick:  pol.Sanitize(r.Form.Get("username")),
-		Pass:  r.Form.Get("password"),
+		Email:      pol.Sanitize(r.Form.Get("email")),
+		Nick:       pol.Sanitize(r.Form.Get("nick")),
+		Pass:       r.Form.Get("password"),
 		CreateDate: time.Now(),
 	}
 	if newUser.Email == "" || newUser.Nick == "" || newUser.Pass == "" {
