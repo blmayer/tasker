@@ -2,10 +2,13 @@ package main
 
 import (
 	"net/smtp"
+	"os"
 )
 
 func sendEmail(email, nick, pass string) {
-	auth := smtp.PlainAuth("", "user@example.com", "password", "mail.google.com")
+	from := os.Getenv("EMAIL_FROM")
+	fromPass := os.Getenv("EMAIL_PASS")
+	auth := smtp.PlainAuth("", from, fromPass, "smtp.gmail.com")
 
 	to := []string{email}
 	msg := []byte("To: " + email + "\r\n" +
@@ -21,7 +24,7 @@ func sendEmail(email, nick, pass string) {
 		"The password reset bot\r\n",
 	)
 
-	err := smtp.SendMail("mail.example.com:25", auth, "sender@example.org", to, msg)
+	err := smtp.SendMail("smtp.gmail.com:587", auth, from, to, msg)
 	if err != nil {
 		println("ERROR:", err.Error())
 	}
