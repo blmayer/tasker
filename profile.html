@@ -18,23 +18,21 @@
 		</header>
 		<main>
 			<div>
-				{{.CreateDate.Format "02 Jan 06 15:04"}}
+				<span>{{.CreateDate.Format "02 Jan 06 15:04"}}</span>
 				<p>
 					<a href="/logout"><small>logout</small></a><br>
 				</p>
 			</div>
 			<section>
-				<li>
-					<h3>#X {{.Nick}}</h3>
-					<p><b>{{.Email}}</b></p>
-					<article>
-						<h3>Settings</h3>
-						{{range .Configs}}
-							- {{.}}
-						{{end}}
-					</article>
-					<p><em>Active</em></p>
-				</li>
+				<h3>#X {{.Nick}}</h3>
+				<p><b>{{.Email}}</b></p>
+				<article>
+					<h3>Settings</h3>
+					{{range .Configs}}
+						- {{.}}
+					{{end}}
+				</article>
+				<p><em>Active</em></p>
 			</section>
 		</main>
 	</body>
