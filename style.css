@@ -28,7 +28,7 @@ article {
 
 span > div {
 	width: 130px;
-	position: fixed;
+	position: relative;
 }
 
 span > div::after {
