@@ -25,11 +25,12 @@ article {
 	color: #666;
 }
 
-span {
-	position: relative;
+
+span > div {
+	width: 120px;
 }
 
-span::after {
+span > div::after {
 	content: "•";
 	position: absolute;
 	right: -27.5px;
