@@ -27,13 +27,14 @@ article {
 
 
 span > div {
-	width: 120px;
+	width: 130px;
+	position: fixed;
 }
 
 span > div::after {
 	content: "•";
 	position: absolute;
-	right: -27.5px;
+	right: -3.5px;
 }
 
 a {
