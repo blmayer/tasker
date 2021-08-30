@@ -24,14 +24,12 @@
 		</header>
 		<main id="tasks">
 			{{range .Tasks}}
-				{{.Date.Format "02 Jan 06 15:04"}}
+				<span>{{.Date.Format "02 Jan 06 15:04"}}</span>
 				<section>
 					<a href="/tasks/{{.ID}}">
-						<li>
-							<h3>#{{.ID}} {{.Title}}</h3>
-							<p><b>{{.Summary}}</b></p>
-							<p><em>{{.Status}}</em></p>
-						</li>
+						<h3>#{{.ID}} {{.Title}}</h3>
+						<p><b>{{.Summary}}</b></p>
+						<p><em>{{.Status}}</em></p>
 					</a>
 				</section>
 			{{end}}

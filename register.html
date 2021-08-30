@@ -19,10 +19,9 @@
         </a>
     </header>
     <main>
-        {{.Format "02 Jan 06 15:04"}}
+        <span>{{.Format "02 Jan 06 15:04"}}</span>
         <section>
             <a>
-                <li>
                     <form method="POST">
                         <h3>#X <input name="email" placeholder="Email" size="35" autofocus required></h3>
                         <p>
@@ -34,7 +33,6 @@
 			<p><em>New</em></p>
                         <input type="submit" value="Register"></input>
                     </form>
-                </li>
             </a>
         </section>
     </main>

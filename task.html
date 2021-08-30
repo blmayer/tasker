@@ -17,20 +17,18 @@
 		</header>
 		<main id="tasks">
 			<div>
-				{{.Date.Format "02 Jan 06 15:04"}}
+				<span>{{.Date.Format "02 Jan 06 15:04"}}</span>
 				<p>
 				<a href="/edit/{{.ID}}"><small>edit</small></a><br>
 				<a href="/delete/{{.ID}}"><small>delete</small></a>
 				</p>
 			</div>
 			<section>
-				<li>
-					<h3>#{{.ID}} {{.Title}}</h3>
-					<p><b>{{.Summary}}</b></p>
-					<article>{{.Description}}</article>
-					<p>Created by: <em>{{.Creator}}</em></p>
-					<p><em>{{.Status}}</em></p>
-				</li>
+				<h3>#{{.ID}} {{.Title}}</h3>
+				<p><b>{{.Summary}}</b></p>
+				<article>{{.Description}}</article>
+				<p>Created by: <em>{{.Creator}}</em></p>
+				<p><em>{{.Status}}</em></p>
 			</section>
 		</main>
 		<footer>
