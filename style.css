@@ -11,7 +11,7 @@ body {
 
 main {
 	display: grid;
-	grid-template-columns: 170px 1fr;
+	grid-template-columns: 130px 1fr;
 	align-items: first baseline;
 }
 
@@ -28,7 +28,7 @@ article {
 span::after {
 	content: "•";
 	position: relative;
-	left: 61.5px;
+	left: 27.5px;
 }
 
 a {
