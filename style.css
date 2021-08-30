@@ -25,10 +25,14 @@ article {
 	color: #666;
 }
 
+span {
+	position: relative;
+}
+
 span::after {
 	content: "•";
-	position: relative;
-	left: 27.5px;
+	position: absolute;
+	right: -27.5px;
 }
 
 a {

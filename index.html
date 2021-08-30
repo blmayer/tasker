@@ -24,7 +24,7 @@
 		</header>
 		<main id="tasks">
 			{{range .Tasks}}
-				<span>{{.Date.Format "02 Jan 06 15:04"}}</span>
+				<div><span>{{.Date.Format "02 Jan 06 15:04"}}</span></div>
 				<section>
 					<a href="/tasks/{{.ID}}">
 						<h3>#{{.ID}} {{.Title}}</h3>
