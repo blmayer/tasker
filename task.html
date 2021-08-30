@@ -16,13 +16,13 @@
 			<a href="/"><h1>Tasks</h1></a>
 		</header>
 		<main id="tasks">
-			<div>
-				<span>{{.Date.Format "02 Jan 06 15:04"}}</span>
+			<span>
+				<div>{{.Date.Format "02 Jan 06 15:04"}}</div>
 				<p>
 					<a href="/edit/{{.ID}}"><small>edit</small></a><br>
 					<a href="/delete/{{.ID}}"><small>delete</small></a>
 				</p>
-			</div>
+			</span>
 			<section>
 				<h3>#{{.ID}} {{.Title}}</h3>
 				<p><b>{{.Summary}}</b></p>
