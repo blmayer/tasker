@@ -28,7 +28,7 @@ article {
 span::after {
 	content: "•";
 	position: relative;
-	left: 61px;
+	left: 61.5px;
 }
 
 a {
