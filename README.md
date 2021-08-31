@@ -37,3 +37,7 @@ use at your own risk. Feel free to contribute, fork, clone or distribute. See
 ## TODO:
 
 - Let user provide a key for encryption
+- Integrate with other services, like Jira or github
+- More lists per user
+- Shared/public lists with permission control
+- Migrate to deta micro?
