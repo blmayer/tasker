@@ -16,26 +16,24 @@
 		<main>
 			<span>{{.Date.Format "02 Jan 06 15:04"}}</span>
 			<section>
-				<a>
-					<form action="/edit" method="POST">
-						<h3>#{{.ID}} <input name="title" placeholder="Title" size="35" value="{{.Title}}" autofocus required></h3>
-						<p><input name="summary" placeholder="Summary" size="35" value="{{.Summary}}" autofocus></p>
-						<p><textarea name="description" placeholder="Task description" rows="10" cols="40" required>{{.Description}}</textarea></p>
-						<p>
-							<select name="status">
-								<option {{if eq .Status "Active"}}selected{{end}} value="Active">Active</option>
-								<option {{if eq .Status "Blocked"}}selected{{end}} value="Blocked">Blocked</option>
-								<option {{if eq .Status "Done"}}selected{{end}} value="Done">Done</option>
-								<option {{if eq .Status "Inactive"}}selected{{end}} value="Inactive">Inactive</option>
-							</select>
-						</p>
-						<input name="key" value="{{.Key}}" hidden>
-						<input name="date" value="{{.Date.Format "2006-01-02T15:04:05Z07:00"}}" hidden>
-						<input name="creator" value="{{.Creator}}" hidden>
+				<form action="/edit" method="POST">
+					<h3>#{{.ID}} <input name="title" placeholder="Title" size="35" value="{{.Title}}" autofocus required></h3>
+					<p><input name="summary" placeholder="Summary" size="35" value="{{.Summary}}" autofocus></p>
+					<p><textarea name="description" placeholder="Task description" rows="10" cols="40" required>{{.Description}}</textarea></p>
+					<p>
+						<select name="status">
+							<option {{if eq .Status "Active"}}selected{{end}} value="Active">Active</option>
+							<option {{if eq .Status "Blocked"}}selected{{end}} value="Blocked">Blocked</option>
+							<option {{if eq .Status "Done"}}selected{{end}} value="Done">Done</option>
+							<option {{if eq .Status "Inactive"}}selected{{end}} value="Inactive">Inactive</option>
+						</select>
+					</p>
+					<input name="key" value="{{.Key}}" hidden>
+					<input name="date" value="{{.Date.Format "2006-01-02T15:04:05Z07:00"}}" hidden>
+					<input name="creator" value="{{.Creator}}" hidden>
 
-						<input type="submit" value="Update"></input>
-					</form>
-				</a>
+					<input type="submit" value="Update">
+				</form>
 			</section>
 		</main>
 	</body>

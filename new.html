@@ -16,25 +16,23 @@
 		<main>
 			{{.Format "02 Jan 06 15:04"}}
 			<section>
-				<a>
-					<li>
-						<form action="/" method="POST">
-							<h3>#X <input name="title" placeholder="Title" size="35" autofocus required></h3>
-							<p><input name="summary" placeholder="Summary" size="35" autofocus></p>
-							<p><textarea name="description" placeholder="Task description" rows="10" cols="40" required></textarea></p>
-							<p>
+				<li>
+					<form action="/" method="POST">
+						<h3>#X <input name="title" placeholder="Title" size="35" autofocus required></h3>
+						<p><input name="summary" placeholder="Summary" size="35" autofocus></p>
+						<p><textarea name="description" placeholder="Task description" rows="10" cols="40" required></textarea></p>
+						<p>
 							<select name="status">
 								<option value="Active">Active</option>
 								<option value="Blocked">Blocked</option>
 								<option value="Done">Done</option>
 								<option value="Inactive">Inactive</option>
 							</select>
-							</p>
+						</p>
 
-							<input type="submit" value="Add task">
-						</form>
-					</li>
-				</a>
+						<input type="submit" value="Add task">
+					</form>
+				</li>
 			</section>
 		</main>
 
