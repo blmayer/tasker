@@ -182,11 +182,11 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 	p := indexPayload{Tasks: defaultTasks}
 	parts := strings.Split(r.URL.Path, "/")
 	page := "task.html"
-	if parts[2] == "edit" {
+	if parts[1] == "edit" {
 		page = "edit.html"
 	}
 
-	id, err := strconv.Atoi(parts[3])
+	id, err := strconv.Atoi(parts[2])
 	if err != nil {
 		pages.ExecuteTemplate(w, "index.html", p)
 		return
@@ -216,7 +216,7 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	t := p.Tasks[0]
-	if parts[2] == "delete" {
+	if parts[1] == "delete" {
 		err = tasksDB.Delete(t.Key)
 		if err != nil {
 			// TODO: Show error page
