@@ -34,7 +34,7 @@ span > div {
 span > div::after {
 	content: "•";
 	position: absolute;
-	right: -3.5px;
+	right: -3.8px;
 }
 
 a {
