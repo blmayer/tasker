@@ -19,26 +19,25 @@
         </a>
     </header>
     <main>
-        {{.Format "02 Jan 06 15:04"}}
+        <span>
+            <div>{{.Date.Format "02 Jan 06 15:04"}}</div>
+        </span>
         <section>
-            <a>
-                <li>
-                    <form method="POST">
-                        <h3>#X <input name="email" placeholder="Email" size="35" autofocus required></h3>
-                        <p>
-                            <input name="nick" placeholder="Username" size="35" autofocus required>
-                        </p>
-                        <article>
-                            <p>
-                                An email will be sent to the email if the given email and nick are valid.
-                                Then follow the link on the email and enter the temporary password sent.
-                            </p>
-                        </article>
-			            <p><em>Active</em></p>
-                        <input type="submit" value="Reset">
-                    </form>
-                </li>
-            </a>
+            <form method="POST">
+                <h3>#X <input name="email" placeholder="Email" size="35" autofocus required></h3>
+                <p>
+                    <input name="nick" placeholder="Username" size="35" autofocus required>
+                </p>
+                <article>
+                    <p>
+                        An email will be sent to the email if the given
+                        email and nick are valid. Then follow the link on
+                        the email and enter the temporary password sent.
+                    </p>
+                </article>
+                <p><em>Active</em></p>
+                <input type="submit" value="Reset">
+            </form>
         </section>
     </main>
 

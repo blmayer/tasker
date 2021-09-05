@@ -19,21 +19,21 @@
         </a>
     </header>
     <main>
-        <span>{{.Format "02 Jan 06 15:04"}}</span>
+        <span>
+            <div>{{.Date.Format "02 Jan 06 15:04"}}</div>
+        </span>
         <section>
-            <a>
-                    <form method="POST">
-                        <h3>#X <input name="email" placeholder="Email" size="35" autofocus required></h3>
-                        <p>
-                            <input name="nick" placeholder="Username" size="35" autofocus required>
-                        </p>
-                        <p>
-                            <input type="password" name="password" placeholder="Password" size="35" autofocus required>
-                        </p>
-			            <p><em>New</em></p>
-                        <input type="submit" value="Register">
-                    </form>
-            </a>
+            <form method="POST">
+                <h3>#X <input name="email" placeholder="Email" size="35" autofocus required></h3>
+                <p>
+                    <input name="nick" placeholder="Username" size="35" autofocus required>
+                </p>
+                <p>
+                    <input type="password" name="password" placeholder="Password" size="35" autofocus required>
+                </p>
+                <p><em>New</em></p>
+                <input type="submit" value="Register">
+            </form>
         </section>
     </main>
 

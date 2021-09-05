@@ -19,21 +19,21 @@
         </a>
     </header>
     <main>
-        {{.CreateDate.Format "02 Jan 06 15:04"}}
+        <span>
+            <div>{{.CreateDate.Format "02 Jan 06 15:04"}}</div>
+        </span>
         <section>
-            <li>
-                <form action="/newpass" method="POST">
-                    <h3>#X <input name="nick" placeholder="Username" value="{{.Nick}}" size="35" autofocus required></h3>
-                    <p>
-                        <input name="temp" placeholder="temp" value="{{.Pass}}" size="35" autofocus required>
-                    </p>
-                    <p>
-                        <input type="password" name="password" placeholder="Password" size="35" autofocus required>
-                    </p>
-                    <p><em>Active</em></p>
-                    <input type="submit" value="Update">
-                </form>
-            </li>
+            <form action="/newpass" method="POST">
+                <h3>#X <input name="nick" placeholder="Username" value="{{.Nick}}" size="35" autofocus required></h3>
+                <p>
+                    <input name="temp" placeholder="temp" value="{{.Pass}}" size="35" autofocus required>
+                </p>
+                <p>
+                    <input type="password" name="password" placeholder="Password" size="35" autofocus required>
+                </p>
+                <p><em>Active</em></p>
+                <input type="submit" value="Update">
+            </form>
         </section>
     </main>
 

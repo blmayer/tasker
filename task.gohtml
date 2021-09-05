@@ -1,0 +1,14 @@
+<span>
+    <div>{{.Date.Format "02 Jan 06 15:04"}}</div>
+    <p>
+        <a href="{{.ID}}/edit"><small>edit</small></a><br>
+        <a href="{{.ID}}/delete"><small>delete</small></a>
+    </p>
+</span>
+<section>
+    <h3>#{{.ID}} {{.Title}}</h3>
+    <p><b>{{.Summary}}</b></p>
+    <article>{{.Description}}</article>
+    <p>Created by: <em>{{.Creator}}</em></p>
+    <p><em>{{.Status}}</em></p>
+</section>

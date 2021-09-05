@@ -19,7 +19,9 @@
         </a>
     </header>
     <main>
-        <span>{{.Format "02 Jan 06 15:04"}}</span>
+        <span>
+            <div>{{.Date.Format "02 Jan 06 15:04"}}</div>
+        </span>
         <section>
             <form method="POST">
                 <h3>#X <input name="nick" placeholder="Username" size="35" autofocus required></h3>

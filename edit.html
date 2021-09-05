@@ -14,7 +14,9 @@
 			<a href="/"><h1>Tasks</h1></a>
 		</header>
 		<main>
-			<span>{{.Date.Format "02 Jan 06 15:04"}}</span>
+			<span>
+				<div>{{.Date.Format "02 Jan 06 15:04"}}</div>
+			</span>
 			<section>
 				<form action="/edit" method="POST">
 					<h3>#{{.ID}} <input name="title" placeholder="Title" size="35" value="{{.Title}}" autofocus required></h3>
