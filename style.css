@@ -11,7 +11,7 @@ body {
 
 main {
 	display: grid;
-	grid-template-columns: 130px 1fr;
+	grid-template-columns: 150px 1fr;
 	align-items: first baseline;
 }
 
@@ -27,14 +27,14 @@ article {
 
 
 span > div {
-	width: 130px;
+	width: 150px;
 	position: relative;
 }
 
 span > div::after {
 	content: "•";
 	position: absolute;
-	right: -3.8px;
+	right: -5.7px;
 }
 
 a {
