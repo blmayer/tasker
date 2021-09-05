@@ -15,101 +15,6 @@ import (
 	"github.com/deta/deta-go/service/base"
 )
 
-const chars = "ABCDEFGHIJKLMNOPQRSTUVWabcdefghijklmnopqrstuvw1234567890/_."
-
-var defaultTasks = []Task{
-	{
-		ID:      4,
-		Title:   "Learn to use this",
-		Summary: "This task has a tutorial.",
-		Description: `# Welcome!
-Thank you for taking your time using this, I've done it for
-my own needs but decided to open it as a web service. So
-feel free to email me or use GitHub for droping a message.
-
-## First steps
-Follow the tasks on the main page, they will guide you to
-create a user and log in whenever you need.
-
-## Creating tasks
-After logging in you can create your own tasks, to do so
-click on the + sign to create a new task. Then fill in
-the fields, **only the description is optional**.
-
-### Markdown support
-Yes, you can use markdown on the **description** field,
-we support a nice set of extensions, just some:
-
-Tables like
-
-Name    | Age
---------|------
-Bob     | 27
-Alice   | 23
-
-Can be entered by typing:
-` + "```" + `
-Name    | Age
---------|------
-Bob     | 27
-Alice   | 23
-
-` + "```" + `
-
-~~striked~~ through text using tildes: ` + "`~~`" + `.
-
-### Updating tasks
-There is a small link, edit task, below the date when you are seeing a task.
-
-### Notes
-This site doesn't use JavaScript, I try to make it as simple as possible,
-so authentication uses cookies, but with a strict security, to create a
-session.
-
-***
-
-See https://daringfireball.net/projects/markdown/ to learn more.
-`,
-		Status:  "Active",
-		Creator: "blmayer",
-		Date:    time.Now().Add(-10 * time.Second),
-	},
-	{
-		ID:      3,
-		Title:   "Make your login",
-		Summary: "This task has a link for the login page.",
-		Description: `<p>I'm glad you made your registration. Here is the
-link: <a href="/login">login page</a>.</p>
-<p>But if you forgot the password use this link:
-<a href="/reset">reset password</a>.</p>`,
-		Status:  "Blocked",
-		Creator: "blmayer",
-		Date:    time.Now().Add(-12 * time.Hour),
-	},
-	{
-		ID:          2,
-		Title:       "Create your user",
-		Summary:     "The description of this task has a link to the registration page.",
-		Description: `<p>Here is the link: <a href="/register">registration page</a>. Welcome!</p>`,
-		Status:      "Active",
-		Creator:     "blmayer",
-		Date:        time.Now().Add(-30 * time.Hour),
-	},
-	{
-		ID:      1,
-		Title:   "Find this website",
-		Summary: "Congratulations! You found this task manager.",
-		Status:  "Done",
-		Creator: "blmayer",
-		Date:    time.Now().Add(-48 * time.Hour),
-	},
-}
-
-type indexPayload struct {
-	Tasks []Task
-	User  User
-}
-
 func index(w http.ResponseWriter, r *http.Request) {
 	p := indexPayload{
 		Tasks: defaultTasks,
@@ -184,14 +89,14 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(parts[2])
 	if err != nil {
-		pages.ExecuteTemplate(w, "index.html", p)
+		logErr(pages.ExecuteTemplate(w, "index.html", p))
 		return
 	}
 	p.Tasks = []Task{}
 
 	cookies := r.Cookies()
 	if len(cookies) != 1 {
-		pages.ExecuteTemplate(w, "task.html", defaultTasks[4-id])
+		logErr(pages.ExecuteTemplate(w, "task.html", defaultTasks[4-id]))
 		return
 	}
 	p.User, err = getUserFromCookie(*cookies[0])
@@ -233,7 +138,7 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 		md := markdown.ToHTML([]byte(t.Description), nil, nil)
 		t.Description = string(md)
 	}
-	pages.ExecuteTemplate(w, page, t)
+	logErr(pages.ExecuteTemplate(w, page, t))
 }
 
 func profile(w http.ResponseWriter, r *http.Request) {
@@ -247,17 +152,17 @@ func profile(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	pages.ExecuteTemplate(w, "profile.html", user)
+	logErr(pages.ExecuteTemplate(w, "profile.html", user))
 }
 
 func newTask(w http.ResponseWriter, r *http.Request) {
-	pages.ExecuteTemplate(w, "new.html", time.Now())
+	logErr(pages.ExecuteTemplate(w, "new.html", Task{Date: time.Now()}))
 }
 
 func editTask(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		pages.ExecuteTemplate(w, "index.html", err)
+		logErr(pages.ExecuteTemplate(w, "index.html", err))
 		return
 	}
 
@@ -307,7 +212,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookies[0].Domain = "tasker.blmayer.dev"
+	cookies[0].Domain = domain
 	cookies[0].Expires = time.Now()
 	cookies[0].MaxAge = 0
 	cookies[0].Path = "/"
@@ -317,13 +222,13 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 func login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		pages.ExecuteTemplate(w, "login.html", time.Now())
+		logErr(pages.ExecuteTemplate(w, "login.html", Task{Date: time.Now()}))
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		pages.ExecuteTemplate(w, "index.html", err)
+		logErr(pages.ExecuteTemplate(w, "index.html", err))
 		return
 	}
 
@@ -355,7 +260,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(user.Pass) == 4 && user.Pass == dbUsers[0].Pass {
-		pages.ExecuteTemplate(w, "newpass.html", user)
+		logErr(pages.ExecuteTemplate(w, "newpass.html", user))
 		return
 	}
 
@@ -404,13 +309,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 func newPass(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		pages.ExecuteTemplate(w, "login.html", time.Now())
+		logErr(pages.ExecuteTemplate(w, "login.html", Task{Date: time.Now()}))
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		pages.ExecuteTemplate(w, "index.html", err)
+		logErr(pages.ExecuteTemplate(w, "index.html", err))
 		return
 	}
 
@@ -487,7 +392,7 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 
 func resetPass(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		pages.ExecuteTemplate(w, "reset.html", time.Now())
+		logErr(pages.ExecuteTemplate(w, "reset.html", Task{Date: time.Now()}))
 		return
 	}
 
@@ -554,7 +459,8 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 
 func register(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		pages.ExecuteTemplate(w, "register.html", time.Now())
+		e := pages.ExecuteTemplate(w, "register.html", Task{Date: time.Now()})
+		logErr(e)
 		return
 	}
 
@@ -623,7 +529,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 		&http.Cookie{
 			Name:     "token",
 			Value:    string(token),
-			Domain:   "tasker.blmayer.dev",
+			Domain:   domain,
 			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
 			Expires:  newUser.Token.Expires,

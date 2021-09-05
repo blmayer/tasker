@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"text/template"
-	"time"
 
 	"github.com/deta/deta-go/deta"
 	"github.com/deta/deta-go/service/base"
@@ -16,7 +15,7 @@ import (
 )
 
 var (
-	//go:embed *.html *.css
+	//go:embed *.html *.css *.gohtml
 	content embed.FS
 
 	pages   *template.Template
@@ -24,38 +23,20 @@ var (
 	tasksDB *base.Base
 
 	pol = bluemonday.UGCPolicy()
+
+	domain = "tasker.blmayer.dev"
 )
 
-type Token struct {
-	Value   string
-	Expires time.Time
-}
-
-type User struct {
-	Key        string `json:"key"`
-	Nick       string
-	Email      string
-	Pass       string
-	Token      Token
-	CreateDate time.Time
-	Configs    []interface{}
-}
-
-type Task struct {
-	Key         string `json:"key"`
-	ID          int
-	Title       string
-	Status      string
-	Summary     string
-	Description string
-	Creator     string
-	Date        time.Time
+func logErr(err error) {
+	if err != nil {
+		println("ERROR:", err.Error())
+	}
 }
 
 func main() {
 	// Parse templates
 	var err error
-	pages, err = template.ParseFS(content, "*.html", "*.css")
+	pages, err = template.ParseFS(content, "*.html", "*.css", "*.gohtml")
 	if err != nil {
 		panic(err)
 	}
@@ -65,19 +46,23 @@ func main() {
 		port = "8080"
 	}
 
+	if os.Getenv("DEBUG") != "" {
+		domain = "localhost"
+	}
+
 	detaKey := os.Getenv("DETA_KEY")
 	d, err := deta.New(deta.WithProjectKey(detaKey))
 	if err != nil {
-		println("deta client error:", err)
+		println("deta client error:", err.Error())
 	}
 
 	usersDB, err = base.New(d, "users")
 	if err != nil {
-		println("deta base error:", err)
+		println("deta base error:", err.Error())
 	}
 	tasksDB, err = base.New(d, "tasks")
 	if err != nil {
-		println("deta base error:", err)
+		println("deta base error:", err.Error())
 	}
 
 	for i, t := range defaultTasks {
