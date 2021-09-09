@@ -35,7 +35,7 @@ span > div {
 }
 
 span > div::after {
-	content: url('data:image/svg+xml; utf8, <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" width="5px" height="5px"><circle cx="5" cy="5" r="5" fill="black"/></svg>');
+	content: url('data:image/svg+xml; utf8, <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" width="5px"><circle cx="5" cy="5" r="5" fill="black"/></svg>');
 	position: absolute;
 	right: -3.3px;
 	top: -3px;
@@ -55,6 +55,7 @@ select {
 }
 
 input, textarea, select {
+	background: #eee;
 	padding: 2px 6px;
 	border-radius: 6px;
 	border-width: 1px;
@@ -86,7 +87,7 @@ input:focus, textarea:focus {
 	}
 
 	span > div::after {
-		content: url('data:image/svg+xml; utf8, <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" width="5px" height="5px"><circle cx="5" cy="5" r="5" fill="white"/></svg>');
+		content: url('data:image/svg+xml; utf8, <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" width="5px"><circle cx="5" cy="5" r="5" fill="white"/></svg>');
 	}
 }
 
