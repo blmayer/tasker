@@ -69,7 +69,7 @@ input:focus, textarea:focus {
 @media (prefers-color-scheme: dark) {
 	body {
 		color: #eee;
-		background: #151515;
+		background: #222;
 	}
 
 	article {
