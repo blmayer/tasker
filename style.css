@@ -81,7 +81,7 @@ input:focus, textarea:focus {
 	}
 
 	input, textarea, select {
-		background: #151515;
+		background: #222;
 		color: #eee;
 	}
 
