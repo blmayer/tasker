@@ -34,9 +34,10 @@ span > div {
 }
 
 span > div::after {
-	content: "•";
+	content: url('data:image/svg+xml; utf8, <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" width="5px" height="5px"><circle cx="5" cy="5" r="5" fill="black"/></svg>');
 	position: absolute;
-	right: -5.7px;
+	right: -3.4px;
+	top: -3px;
 }
 
 a {
@@ -81,6 +82,10 @@ input:focus, textarea:focus {
 	input, textarea, select {
 		background: #151515;
 		color: #eee;
+	}
+
+	span > div::after {
+		content: url('data:image/svg+xml; utf8, <svg viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg" width="5px" height="5px"><circle cx="5" cy="5" r="5" fill="white"/></svg>');
 	}
 }
 
