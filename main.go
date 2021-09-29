@@ -27,9 +27,9 @@ var (
 	domain = "tasker.blmayer.dev"
 )
 
-func logErr(err error) {
+func logErr(prefix string, err error) {
 	if err != nil {
-		println("ERROR:", err.Error())
+		println(prefix, "error:", err.Error())
 	}
 }
 
@@ -52,18 +52,12 @@ func main() {
 
 	detaKey := os.Getenv("DETA_KEY")
 	d, err := deta.New(deta.WithProjectKey(detaKey))
-	if err != nil {
-		println("deta client error:", err.Error())
-	}
+	logErr("deta client", err)
 
 	usersDB, err = base.New(d, "users")
-	if err != nil {
-		println("deta base error:", err.Error())
-	}
+	logErr("deta base", err)
 	tasksDB, err = base.New(d, "tasks")
-	if err != nil {
-		println("deta base error:", err.Error())
-	}
+	logErr("deta base", err)
 
 	for i, t := range defaultTasks {
 		md := markdown.ToHTML([]byte(t.Description), nil, nil)

@@ -89,14 +89,14 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(parts[2])
 	if err != nil {
-		logErr(pages.ExecuteTemplate(w, "index.html", p))
+		logErr("template", pages.ExecuteTemplate(w, "index.html", p))
 		return
 	}
 	p.Tasks = []Task{}
 
 	cookies := r.Cookies()
 	if len(cookies) != 1 {
-		logErr(pages.ExecuteTemplate(w, "task.html", defaultTasks[4-id]))
+		logErr("template", pages.ExecuteTemplate(w, "task.html", defaultTasks[4-id]))
 		return
 	}
 	p.User, err = getUserFromCookie(*cookies[0])
@@ -138,7 +138,7 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 		md := markdown.ToHTML([]byte(t.Description), nil, nil)
 		t.Description = string(md)
 	}
-	logErr(pages.ExecuteTemplate(w, page, t))
+	logErr("template", pages.ExecuteTemplate(w, page, t))
 }
 
 func profile(w http.ResponseWriter, r *http.Request) {
@@ -152,17 +152,17 @@ func profile(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	logErr(pages.ExecuteTemplate(w, "profile.html", user))
+	logErr("template", pages.ExecuteTemplate(w, "profile.html", user))
 }
 
 func newTask(w http.ResponseWriter, r *http.Request) {
-	logErr(pages.ExecuteTemplate(w, "new.html", Task{Date: time.Now()}))
+	logErr("template", pages.ExecuteTemplate(w, "new.html", Task{Date: time.Now()}))
 }
 
 func editTask(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		logErr(pages.ExecuteTemplate(w, "index.html", err))
+		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
 		return
 	}
 
@@ -222,13 +222,13 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 func login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		logErr(pages.ExecuteTemplate(w, "login.html", Task{Date: time.Now()}))
+		logErr("tempalte", pages.ExecuteTemplate(w, "login.html", Task{Date: time.Now()}))
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		logErr(pages.ExecuteTemplate(w, "index.html", err))
+		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
 		return
 	}
 
@@ -260,7 +260,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(user.Pass) == 4 && user.Pass == dbUsers[0].Pass {
-		logErr(pages.ExecuteTemplate(w, "newpass.html", user))
+		logErr("template", pages.ExecuteTemplate(w, "newpass.html", user))
 		return
 	}
 
@@ -309,13 +309,13 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 func newPass(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		logErr(pages.ExecuteTemplate(w, "login.html", Task{Date: time.Now()}))
+		logErr("template", pages.ExecuteTemplate(w, "login.html", Task{Date: time.Now()}))
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		logErr(pages.ExecuteTemplate(w, "index.html", err))
+		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
 		return
 	}
 
@@ -392,7 +392,7 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 
 func resetPass(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		logErr(pages.ExecuteTemplate(w, "reset.html", Task{Date: time.Now()}))
+		logErr("template", pages.ExecuteTemplate(w, "reset.html", Task{Date: time.Now()}))
 		return
 	}
 
@@ -460,7 +460,7 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 func register(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		e := pages.ExecuteTemplate(w, "register.html", Task{Date: time.Now()})
-		logErr(e)
+		logErr("template", e)
 		return
 	}
 
