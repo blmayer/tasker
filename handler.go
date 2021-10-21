@@ -26,8 +26,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := getUserFromCookie(*cookies[0])
 	if err != nil {
-		// TODO: Show error page
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 	p.User = user
@@ -198,7 +197,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := getUserFromCookie(*cookies[0])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -208,7 +207,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 	err = usersDB.Update(user.Key, base.Updates{"Token": token})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -222,13 +221,13 @@ func logout(w http.ResponseWriter, r *http.Request) {
 
 func login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		logErr("tempalte", pages.ExecuteTemplate(w, "login.html", Task{Date: time.Now()}))
+		logErr("template", pages.ExecuteTemplate(w, "login.html", tasks[2]))
 		return
 	}
 
 	err := r.ParseForm()
 	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -315,7 +314,8 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
+		w.WriteHeader(http.StatusBadRequest)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -325,8 +325,8 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 		Pass: r.Form.Get("password"),
 	}
 	if user.Nick == "" || user.Pass == "" || temp == "" {
-		// TODO: Same error page
-		http.Error(w, "empty fields", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Empty fields"))
 		return
 	}
 
@@ -337,24 +337,25 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = usersDB.Fetch(&query)
 	if err != nil {
-		// TODO: Show error page
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 	if len(dbUsers) == 0 {
-		http.Error(w, "user not found", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
 	}
 
 	if temp != dbUsers[0].Pass {
-		http.Error(w, "wrong temp password", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "wrong temp password"))
 		return
 	}
 
 	t := make([]byte, 128)
 	_, err = rand.Read(t)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 	for i, n := range t {
@@ -371,7 +372,7 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 	up := base.Updates{"Pass": user.Pass, "Token": token}
 	err = usersDB.Update(dbUsers[0].Key, up)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -398,8 +399,8 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
-		// TODO: Print error to an html page
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -408,8 +409,8 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 		Nick:  r.Form.Get("nick"),
 	}
 	if user.Email == "" || user.Nick == "" {
-		// TODO: Same error page
-		http.Error(w, "empty email or nick", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Empty email or nick"))
 		return
 	}
 
@@ -421,20 +422,19 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = usersDB.Fetch(&query)
 	if err != nil {
-		// TODO: Show error page
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 	if len(dbUsers) == 0 {
-		// TODO: Show error page
-		http.Error(w, "user not found", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
 	}
 
 	pass := make([]byte, 4)
 	_, err = rand.Read(pass)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 	for i, n := range pass {
@@ -449,8 +449,8 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 	}
 	err = usersDB.Update(dbUsers[0].Key, up)
 	if err != nil {
-		// TODO: Same error page
-		http.Error(w, "update "+err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -466,8 +466,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
-		// TODO: Print error to an html page
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -478,8 +478,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 		CreateDate: time.Now(),
 	}
 	if newUser.Email == "" || newUser.Nick == "" || newUser.Pass == "" {
-		// TODO: Same error page
-		http.Error(w, "empty fields", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Empty fields"))
 		return
 	}
 
@@ -491,12 +491,12 @@ func register(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = usersDB.Fetch(&query)
 	if err != nil {
-		// TODO: Show error page
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 	if len(dbUsers) > 0 {
-		http.Error(w, "user already exists", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "user already exists"))
 		return
 	}
 
@@ -506,7 +506,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 	token := make([]byte, 128)
 	_, err = rand.Read(token)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 	for i, n := range token {
@@ -519,8 +519,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 
 	_, err = usersDB.Insert(newUser)
 	if err != nil {
-		// TODO: Same error page
-		http.Error(w, "empty fields", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 

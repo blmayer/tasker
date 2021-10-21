@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<title>Tasker</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta name="description"
+		      content="Dynamically generated task lists. A simple list to make your tasks easy to find." />
+		<style>
+			{{template "style.css"}}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<a href="/"><h1>Tasks</h1></a>
+		</header>
+		<main>
+			<span>
+				<div>02 Jan 06 15:04</div>
+			</span>
+			<section>
+				<h3>#-1 ERROR</h3>
+				<p><b>OOOPS</b></p>
+				<article>
+                    <h3>Error description:</h3>
+                    <p>{{.}}</p>
+				</article>
+				<p><em>Active</em></p>
+			</section>
+		</main>
+	</body>
+</html>
