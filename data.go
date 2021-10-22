@@ -2,11 +2,47 @@ package main
 
 import "time"
 
-const chars = "ABCDEFGHIJKLMNOPQRSTUVWabcdefghijklmnopqrstuvw1234567890/_."
+const (
+	chars = "ABCDEFGHIJKLMNOPQRSTUVWabcdefghijklmnopqrstuvw1234567890/_."
+
+	NoPermission = Permissions(1 << iota)
+	ReadPermission
+	WritePermission
+	PublicPermission
+)
 
 type Token struct {
 	Value   string
 	Expires time.Time
+}
+
+type Permissions int
+
+type Task struct {
+	Key         string `json:"key"`
+	ID          int
+	List        string
+	ListOwner   string
+	Title       string
+	Status      string
+	Summary     string
+	Description string
+	Creator     string
+	Date        time.Time
+}
+
+type List struct {
+	Name        string
+	Permissions Permissions
+	TaskNumber  int
+	Owner       string
+	CreateDate  time.Time
+}
+
+type Config struct {
+	DefaultList   string
+	DefaultSort   string
+	DefaultFilter string
 }
 
 type User struct {
@@ -16,18 +52,8 @@ type User struct {
 	Pass       string
 	Token      Token
 	CreateDate time.Time
-	Configs    []interface{}
-}
-
-type Task struct {
-	Key         string `json:"key"`
-	ID          int
-	Title       string
-	Status      string
-	Summary     string
-	Description string
-	Creator     string
-	Date        time.Time
+	Configs    Config
+	Lists      map[string]List
 }
 
 type indexPayload struct {
@@ -38,6 +64,7 @@ type indexPayload struct {
 var defaultTasks = []Task{
 	{
 		ID:      4,
+		List:    "tasks",
 		Title:   "Learn to use this",
 		Summary: "This task has a tutorial.",
 		Description: `# Welcome!
@@ -94,6 +121,7 @@ See https://daringfireball.net/projects/markdown/ to learn more.
 	},
 	{
 		ID:      3,
+		List:    "tasks",
 		Title:   "Make your login",
 		Summary: "This task has a link for the login page.",
 		Description: `<p>I'm glad you made your registration. Here is the
@@ -107,6 +135,7 @@ link: <a href="/login">login page</a>.</p>
 	{
 		ID:          2,
 		Title:       "Create your user",
+		List:        "tasks",
 		Summary:     "The description of this task has a link to the registration page.",
 		Description: `<p>Here is the link: <a href="/register">registration page</a>. Welcome!</p>`,
 		Status:      "Active",
@@ -116,9 +145,19 @@ link: <a href="/login">login page</a>.</p>
 	{
 		ID:      1,
 		Title:   "Find this website",
+		List:    "tasks",
 		Summary: "Congratulations! You found this task manager.",
 		Status:  "Done",
 		Creator: "blmayer",
 		Date:    time.Date(2021, 8, 11, 0, 3, 15, 0, time.UTC),
 	},
+}
+
+func isReservedName(name string) bool {
+	for _, w := range reservedNames {
+		if name == w {
+			return true
+		}
+	}
+	return false
 }
