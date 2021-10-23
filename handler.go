@@ -237,8 +237,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 		CreateDate: time.Now(),
 	}
 	if user.Nick == "" || user.Pass == "" {
-		// TODO: Same error page
-		http.Error(w, "empty fields", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Empty fields"))
 		return
 	}
 
@@ -249,12 +249,12 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = usersDB.Fetch(&query)
 	if err != nil {
-		// TODO: Show error page
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 	if len(dbUsers) == 0 {
-		http.Error(w, "user not found", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
 	}
 
@@ -267,14 +267,15 @@ func login(w http.ResponseWriter, r *http.Request) {
 	user.Pass = fmt.Sprintf("%x", sum)
 
 	if user.Pass != dbUsers[0].Pass {
-		http.Error(w, "wrong password", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Wrong password"))
 		return
 	}
 
 	t := make([]byte, 128)
 	_, err = rand.Read(t)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 	for i, n := range t {
