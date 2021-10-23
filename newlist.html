@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>New list</title>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1"/>
+		<meta name="description" content="Dynamically generated task lists. A simple list to make your tasks easy to find."/>
+		<style>
+			{{template "style.css"}}
+		</style>
+	</head>
+	<body>
+		<header>
+			<a href="/"><h1>Tasks</h1></a>
+		</header>
+		<main>
+			<span>
+				<div>{{.Date.Format "02 Jan 06 15:04"}}</div>
+			</span>
+			<section>
+				<form action="/newlist" method="POST">
+					<h3>#X <input name="name" placeholder="List Name" size="35" autofocus required></h3>
+					<p>
+                        <label> Public permission
+                            <input type="checkbox" name="public" value="public">
+                        </label>
+                    </p>
+
+					<input type="submit" value="Create list">
+				</form>
+			</section>
+		</main>
+
+		<footer>
+		</footer>
+	</body>
+</html>

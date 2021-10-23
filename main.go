@@ -24,7 +24,8 @@ var (
 
 	pol = bluemonday.UGCPolicy()
 
-	domain = "tasker.blmayer.dev"
+	// domain = "tasker.blmayer.dev"
+	domain = "localhost"
 )
 
 func logErr(prefix string, err error) {
@@ -59,15 +60,14 @@ func main() {
 	tasksDB, err = base.New(d, "tasks")
 	logErr("deta base", err)
 
-	for i, t := range defaultTasks {
+	for i, t := range tasks {
 		md := markdown.ToHTML([]byte(t.Description), nil, nil)
-		defaultTasks[i].Description = string(md)
+		tasks[i].Description = string(md)
 	}
 
 	http.HandleFunc("/", index)
-	http.HandleFunc("/tasks/", tasks)
-	http.HandleFunc("/new", newTask)
-	http.HandleFunc("/edit", editTask)
+	http.HandleFunc("/newlist", newList)
+	http.HandleFunc("/new/", newTask)
 
 	http.HandleFunc("/register", register)
 	http.HandleFunc("/login", login)

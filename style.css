@@ -6,15 +6,24 @@ html {
 body {
 	background: #eee;
 	color: #444;
-	padding: 10px;
+	padding: 0 10px;
 	margin: 0 auto;
 	max-width: 760px;
+}
+
+nav {
+	font-style: italic;
+	text-align: right;
 }
 
 main {
 	display: grid;
 	grid-template-columns: 150px 1fr;
 	align-items: first baseline;
+}
+
+nav > a {
+	text-decoration: underline;
 }
 
 section {
@@ -28,6 +37,9 @@ article {
 	color: #666;
 }
 
+dt > a {
+	text-decoration: underline;
+}
 
 span > div {
 	width: 150px;

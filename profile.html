@@ -8,7 +8,7 @@
 		<meta name="description"
 		      content="Dynamically generated task lists. A simple list to make your tasks easy to find." />
 		<style>
-{{template "style.css"}}
+			{{template "style.css"}}
 		</style>
 	</head>
 
@@ -20,6 +20,7 @@
 			<span>
 				<div>{{.CreateDate.Format "02 Jan 06 15:04"}}</div>
 				<p>
+					<a href="/newlist"><small>new list</small></a><br>
 					<a href="/logout"><small>logout</small></a><br>
 				</p>
 			</span>
@@ -27,10 +28,21 @@
 				<h3>#X {{.Nick}}</h3>
 				<p><b>{{.Email}}</b></p>
 				<article>
-					<h3>Settings</h3>
-					{{range .Configs}}
-						- {{.}}
+					<h3>Lists</h3>
+					<dl>
+					{{range $k, $v := .Lists}}
+						<dt><a href="/{{$k}}">{{$k}}</a></dt>
+							<dd>Owner: {{$v.Owner}}</dd>
+							<dd>Permissions: {{$v.Permissions}}</dd>
+							<dd>Create date: {{$v.CreateDate.Format "02 Jan 06 15:04"}}</dd>
 					{{end}}
+					</dl>
+					<h3>Settings</h3>
+					<ul>
+						<li>Default list: {{.Configs.DefaultList}}</li>
+						<li>Default sort: {{.Configs.DefaultSort}}</li>
+						<li>Default filter: {{.Configs.DefaultFilter}}</li>
+					</ul>
 				</article>
 				<p><em>Active</em></p>
 			</section>

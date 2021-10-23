@@ -18,7 +18,7 @@
 				<div>{{.Date.Format "02 Jan 06 15:04"}}</div>
 			</span>
 			<section>
-				<form action="/" method="POST">
+				<form action="/{{.List}}/0/new" method="POST">
 					<h3>#X <input name="title" placeholder="Title" size="35" autofocus required></h3>
 					<p><input name="summary" placeholder="Summary" size="35" autofocus></p>
 					<p><textarea name="description" placeholder="Task description" rows="10" cols="40" required></textarea></p>

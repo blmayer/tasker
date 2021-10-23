@@ -5,26 +5,24 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"net/http"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/gomarkdown/markdown"
-
 	"github.com/deta/deta-go/service/base"
 )
 
-func index(w http.ResponseWriter, r *http.Request) {
+func public(w http.ResponseWriter, r *http.Request) {
 	p := indexPayload{
 		Tasks: tasks,
 	}
-	cookies := r.Cookies()
-	if len(cookies) != 1 {
-		pages.ExecuteTemplate(w, "index.html", p)
+	parts := strings.Split(r.URL.Path, "/")
+	if len(parts) < 3 {
+		logErr("template", pages.ExecuteTemplate(w, "index.html", p))
 		return
 	}
-	user, err := getUserFromCookie(*cookies[0])
+
+	id, err := strconv.Atoi(parts[2])
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
@@ -32,12 +30,44 @@ func index(w http.ResponseWriter, r *http.Request) {
 	logErr("template", pages.ExecuteTemplate(w, "task.html", tasks[4-id]))
 }
 
-	p.Tasks = []Task{}
-	query := base.FetchInput{
-		Q:    base.Query{{"Creator": p.User.Nick}},
-		Dest: &p.Tasks,
+func index(w http.ResponseWriter, r *http.Request) {
+	cookies := r.Cookies()
+	if len(cookies) == 0 {
+		public(w, r)
+		return
 	}
-	_, err = tasksDB.Fetch(&query)
+
+	user, err := getUserFromCookie(*cookies[0])
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+		return
+	}
+
+	parts := strings.Split(r.URL.Path, "/")
+	owner := r.URL.Query().Get("owner")
+	if owner == "" {
+		owner = user.Nick
+	}
+
+	switch len(parts) {
+	case 2:
+		serveList(w, r, user, owner)
+	case 3:
+		serveTask(w, r, user, owner)
+	case 4:
+		serveTaskAction(w, r, user, owner)
+	}
+}
+
+func newList(w http.ResponseWriter, r *http.Request) {
+	cookies := r.Cookies()
+	if len(cookies) == 0 {
+		public(w, r)
+		return
+	}
+
+	user, err := getUserFromCookie(*cookies[0])
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
@@ -47,99 +77,43 @@ func index(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
 		if err != nil {
-			pages.ExecuteTemplate(w, "index.html", err)
+			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+			return
+		}
+		name := pol.Sanitize(r.Form.Get("name"))
+		isPublic := r.Form.Get("public") == "public"
+
+		if isReservedName(name) || strings.Contains(name, "/") {
+			logErr("template", pages.ExecuteTemplate(w, "error.html", "Invalid name"))
 			return
 		}
 
-		t := Task{
-			ID:          len(p.Tasks),
-			Title:       pol.Sanitize(r.Form.Get("title")),
-			Summary:     pol.Sanitize(r.Form.Get("summary")),
-			Description: pol.Sanitize(r.Form.Get("description")),
-			Status:      pol.Sanitize(r.Form.Get("status")),
-			Creator:     p.User.Nick,
-			Date:        time.Now(),
-		}
-		p.Tasks = append(p.Tasks, t)
-
-		go func() {
-			_, err = tasksDB.Put(t)
-			if err != nil {
-				println("put error:", err)
-			}
-		}()
-	}
-
-	// Sort by time by default
-	sort.SliceStable(p.Tasks, func(i, j int) bool {
-		return p.Tasks[i].Date.Unix() > p.Tasks[j].Date.Unix()
-	})
-
-	for i, t := range p.Tasks {
-		md := markdown.ToHTML([]byte(t.Description), nil, nil)
-		p.Tasks[i].Description = string(md)
-	}
-
-	pages.ExecuteTemplate(w, "index.html", p)
-}
-
-func tasks(w http.ResponseWriter, r *http.Request) {
-	p := indexPayload{Tasks: defaultTasks}
-	parts := strings.Split(r.URL.Path, "/")
-
-	id, err := strconv.Atoi(parts[2])
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "index.html", p))
-		return
-	}
-	p.Tasks = []Task{}
-
-	cookies := r.Cookies()
-	if len(cookies) != 1 {
-		logErr("template", pages.ExecuteTemplate(w, "task.html", defaultTasks[4-id]))
-		return
-	}
-	p.User, err = getUserFromCookie(*cookies[0])
-	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
-		return
-	}
-
-	query := base.FetchInput{
-		Q:    base.Query{{"Creator": p.User.Nick, "ID": id}},
-		Dest: &p.Tasks,
-	}
-	_, err = tasksDB.Fetch(&query)
-	if err != nil {
-		// TODO: Show error page
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	t := p.Tasks[0]
-	page := "task.html"
-	if len(parts) == 4 {
-		switch parts[3] {
-		case "edit":
-			page = "edit.html"
-		case "delete":
-			err = tasksDB.Delete(t.Key)
-			if err != nil {
-				// TODO: Show error page
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+		if _, has := user.Lists[name]; has {
+			logErr("template", pages.ExecuteTemplate(w, "error.html", "Name unavailable"))
 			return
 		}
-	}
 
-	if page == "task.html" {
-		md := markdown.ToHTML([]byte(t.Description), nil, nil)
-		t.Description = string(md)
+		newList := List{
+			Name:        name,
+			Owner:       user.Nick,
+			CreateDate:  time.Now(),
+			Permissions: ReadPermission | WritePermission,
+		}
+		if isPublic {
+			newList.Permissions |= PublicPermission
+		}
+
+		up := map[string]interface{}{"Lists." + name: newList}
+		err = usersDB.Update(user.Key, up)
+		if err != nil {
+			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+			return
+		}
+
+		logErr("template", pages.ExecuteTemplate(w, "profile.html", user))
+		return
 	}
-	logErr("template", pages.ExecuteTemplate(w, page, t))
+	logErr("template", pages.ExecuteTemplate(w, "newlist.html", Task{Date: time.Now()}))
 }
 
 func profile(w http.ResponseWriter, r *http.Request) {
@@ -154,41 +128,6 @@ func profile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	logErr("template", pages.ExecuteTemplate(w, "profile.html", user))
-}
-
-func newTask(w http.ResponseWriter, r *http.Request) {
-	logErr("template", pages.ExecuteTemplate(w, "new.html", Task{Date: time.Now()}))
-}
-
-func editTask(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
-		return
-	}
-
-	newDate, err := time.Parse(time.RFC3339, r.Form.Get("date"))
-	if err != nil {
-		newDate = time.Now()
-	}
-	id, err := strconv.Atoi(r.Form.Get("id"))
-	t := Task{
-		ID:          id,
-		Key:         pol.Sanitize(r.Form.Get("key")),
-		Title:       pol.Sanitize(r.Form.Get("title")),
-		Summary:     pol.Sanitize(r.Form.Get("summary")),
-		Description: pol.Sanitize(r.Form.Get("description")),
-		Status:      pol.Sanitize(r.Form.Get("status")),
-		Creator:     pol.Sanitize(r.Form.Get("creator")),
-		Date:        newDate,
-	}
-	go func() {
-		_, err = tasksDB.Put(t)
-		if err != nil {
-			println("put error:", err)
-		}
-	}()
-	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
@@ -297,10 +236,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(
 		w,
 		&http.Cookie{
-			Name:     "token",
-			Value:    string(t),
-			Domain:   "tasker.blmayer.dev",
-			Secure:   true,
+			Name:   "token",
+			Value:  string(t),
+			Domain: domain,
+			// Secure:   true,
 			SameSite: http.SameSiteStrictMode,
 			Expires:  token.Expires,
 		},

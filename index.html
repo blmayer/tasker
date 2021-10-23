@@ -13,20 +13,20 @@
 		<meta property="og:description" content="Dynamically generated task lists. A simple timeline to make your tasks easy to find and update, create an account and organize yourself.">
 		<meta property="og:site_name" content="tasker.blmayer.dev">
 		<meta property="og:locale" content="en_US">
-		<link rel="canonical" href="https://tasker.tasker.blmayer.dev/">
+		<link rel="canonical" href="https://tasker.blmayer.dev/">
 		<style>
 			{{template "style.css"}}
 		</style>
 	</head>
 	<body>
 		<header>
-			<h1>Tasks <a href="new">+</a></h1>
+			<h1>{{.List.Name}} <a href="/new/{{.List.Name}}">+</a></h1>
 		</header>
 		<main>
 			{{range .Tasks}}
 				<span><div>{{.Date.Format "02 Jan 06 15:04"}}</div></span>
 				<section>
-					<a href="/tasks/{{.ID}}">
+					<a href="/{{.List}}/{{.ID}}">
 						<h3>#{{.ID}} {{.Title}}</h3>
 						<p><b>{{.Summary}}</b></p>
 						<p><em>{{.Status}}</em></p>
