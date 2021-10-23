@@ -17,7 +17,7 @@ import (
 
 func index(w http.ResponseWriter, r *http.Request) {
 	p := indexPayload{
-		Tasks: defaultTasks,
+		Tasks: tasks,
 	}
 	cookies := r.Cookies()
 	if len(cookies) != 1 {
@@ -29,7 +29,8 @@ func index(w http.ResponseWriter, r *http.Request) {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
-	p.User = user
+	logErr("template", pages.ExecuteTemplate(w, "task.html", tasks[4-id]))
+}
 
 	p.Tasks = []Task{}
 	query := base.FetchInput{
@@ -38,8 +39,8 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err = tasksDB.Fetch(&query)
 	if err != nil {
-		// TODO: Show error page
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -100,7 +101,8 @@ func tasks(w http.ResponseWriter, r *http.Request) {
 	}
 	p.User, err = getUserFromCookie(*cookies[0])
 	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -288,7 +290,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	err = usersDB.Update(dbUsers[0].Key, base.Updates{"Token": token})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -309,7 +311,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 func newPass(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		logErr("template", pages.ExecuteTemplate(w, "login.html", Task{Date: time.Now()}))
+		logErr("template", pages.ExecuteTemplate(w, "login.html", tasks[3]))
 		return
 	}
 
@@ -394,7 +396,7 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 
 func resetPass(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		logErr("template", pages.ExecuteTemplate(w, "reset.html", Task{Date: time.Now()}))
+		logErr("template", pages.ExecuteTemplate(w, "reset.html", tasks[3]))
 		return
 	}
 
@@ -460,7 +462,7 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 
 func register(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		e := pages.ExecuteTemplate(w, "register.html", Task{Date: time.Now()})
+		e := pages.ExecuteTemplate(w, "register.html", tasks[3])
 		logErr("template", e)
 		return
 	}

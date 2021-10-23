@@ -74,7 +74,7 @@ var defaultUser = User{
 	},
 }
 
-var defaultTasks = []Task{
+var tasks = []Task{
 	{
 		ID:      4,
 		List:    "tasks",
