@@ -57,8 +57,21 @@ type User struct {
 }
 
 type indexPayload struct {
-	Tasks []Task
 	User  User
+	List  List
+	Tasks []Task
+}
+
+var reservedNames = []string{
+	"tasks", "new", "newlist", "profile", "reset", "login", "reset", "logout",
+	"register", "newpass",
+}
+
+var defaultUser = User{
+	Nick: "blmayer",
+	Lists: map[string]List{
+		"tasks": {Owner: "blmayer", Permissions: PublicPermission},
+	},
 }
 
 var defaultTasks = []Task{
