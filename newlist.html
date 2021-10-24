@@ -15,17 +15,28 @@
 		</header>
 		<main>
 			<span>
-				<div>{{.Date.Format "02 Jan 06 15:04"}}</div>
+				<div>{{.date.Format "02 Jan 06 15:04"}}</div>
 			</span>
 			<section>
 				<form action="/newlist" method="POST">
 					<h3>#X <input name="name" placeholder="List Name" size="35" autofocus required></h3>
 					<p>
-                        <label> Public permission
-                            <input type="checkbox" name="public" value="public">
-                        </label>
-                    </p>
-
+						<label> Public permission
+							<input type="checkbox" name="public" value="public">
+						</label>
+                    			</p>
+					<article>
+						<h3>Requirements</h3>
+						<ul>
+							<li>Names cannot contain / characters.</li>
+							<li>Some names are forbidden:</li>
+							<ul>
+							{{range .words}}
+								<li>{{.}}</li>
+							{{end}}
+							</ul>
+						</ul>
+					</article>
 					<input type="submit" value="Create list">
 				</form>
 			</section>
