@@ -15,6 +15,7 @@ import (
 func public(w http.ResponseWriter, r *http.Request) {
 	p := indexPayload{
 		Tasks: tasks,
+		List:  List{Name: "tasks"},
 	}
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 3 {
@@ -113,7 +114,11 @@ func newList(w http.ResponseWriter, r *http.Request) {
 		logErr("template", pages.ExecuteTemplate(w, "profile.html", user))
 		return
 	}
-	logErr("template", pages.ExecuteTemplate(w, "newlist.html", Task{Date: time.Now()}))
+	data := map[string]interface{}{
+		"date":  time.Now(),
+		"words": reservedNames,
+	}
+	logErr("template", pages.ExecuteTemplate(w, "newlist.html", data))
 }
 
 func profile(w http.ResponseWriter, r *http.Request) {
