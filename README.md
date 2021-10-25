@@ -1,5 +1,7 @@
 # tasker
 
+![](https://github.com/blmayer/tasker/actions/workflows/go.yml/badge.svg)
+
 > My task list, maybe will be a web service.
 > I wanted to try out some things, and decided to make my own task manager.
 
@@ -38,6 +40,6 @@ use at your own risk. Feel free to contribute, fork, clone or distribute. See
 
 - Let user provide a key for encryption
 - Integrate with other services, like Jira or github
-- More lists per user
+- ~~More lists per user~~
 - Shared/public lists with permission control
 - Migrate to deta micro?
