@@ -423,6 +423,17 @@ func register(w http.ResponseWriter, r *http.Request) {
 		Nick:       pol.Sanitize(r.Form.Get("nick")),
 		Pass:       r.Form.Get("password"),
 		CreateDate: time.Now(),
+		Lists:      map[string]List{
+			"tasks": List{
+				Name: "tasks",
+				Owner: pol.Sanitize(r.Form.Get("nick")),
+				Permissions: ReadPermission|WritePermission,
+				CreateDate: time.Now(),
+			  },
+		},		
+		Configs: Config{
+			DefaultList: "tasks",
+		},
 	}
 	if newUser.Email == "" || newUser.Nick == "" || newUser.Pass == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -482,7 +493,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 			Expires:  newUser.Token.Expires,
 		},
 	)
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, "/tasks", http.StatusFound)
 }
 
 func getUserFromCookie(c http.Cookie) (User, error) {
