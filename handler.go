@@ -244,7 +244,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 			Name:   "token",
 			Value:  string(t),
 			Domain: domain,
-			// Secure:   true,
+			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
 			Expires:  token.Expires,
 		},
@@ -328,7 +328,7 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 		&http.Cookie{
 			Name:     "token",
 			Value:    string(t),
-			Domain:   "tasker.blmayer.dev",
+			Domain:   domain,
 			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
 			Expires:  token.Expires,
