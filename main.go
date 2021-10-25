@@ -24,8 +24,8 @@ var (
 
 	pol = bluemonday.UGCPolicy()
 
-	// domain = "tasker.blmayer.dev"
-	domain = "localhost"
+	domain = "tasker.blmayer.dev"
+	// domain = "localhost"
 )
 
 func logErr(prefix string, err error) {
