@@ -132,6 +132,30 @@ func profile(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
+	if r.Method == http.MethodPost {
+		err := r.ParseForm()
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+			return
+		}
+
+		up := map[string]interface{}{}
+		for k := range r.Form {
+			switch k {
+			case "default_list":
+				v := pol.Sanitize(r.Form.Get(k))
+				up["Configs.DefaultList"] = v
+				user.Configs.DefaultList = v
+			}
+		}
+
+		err = usersDB.Update(user.Key, up)
+		if err != nil {
+			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+			return
+		}
+	}
 	logErr("template", pages.ExecuteTemplate(w, "profile.html", user))
 }
 
@@ -241,9 +265,9 @@ func login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(
 		w,
 		&http.Cookie{
-			Name:   "token",
-			Value:  string(t),
-			Domain: domain,
+			Name:     "token",
+			Value:    string(t),
+			Domain:   domain,
 			Secure:   true,
 			SameSite: http.SameSiteStrictMode,
 			Expires:  token.Expires,
@@ -423,14 +447,14 @@ func register(w http.ResponseWriter, r *http.Request) {
 		Nick:       pol.Sanitize(r.Form.Get("nick")),
 		Pass:       r.Form.Get("password"),
 		CreateDate: time.Now(),
-		Lists:      map[string]List{
-			"tasks": List{
-				Name: "tasks",
-				Owner: pol.Sanitize(r.Form.Get("nick")),
-				Permissions: ReadPermission|WritePermission,
-				CreateDate: time.Now(),
-			  },
-		},		
+		Lists: map[string]List{
+			"tasks": {
+				Name:        "tasks",
+				Owner:       pol.Sanitize(r.Form.Get("nick")),
+				Permissions: ReadPermission | WritePermission,
+				CreateDate:  time.Now(),
+			},
+		},
 		Configs: Config{
 			DefaultList: "tasks",
 		},
