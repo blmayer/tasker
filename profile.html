@@ -14,7 +14,7 @@
 
 	<body>
 		<header>
-			<a href="/"><h1>Tasks</h1></a>
+			<a href="/"><h1>{{.Configs.DefaultList}}</h1></a>
 		</header>
 		<main>
 			<span>
@@ -27,24 +27,35 @@
 			<section>
 				<h3>#X {{.Nick}}</h3>
 				<p><b>{{.Email}}</b></p>
-				<article>
-					<h3>Lists</h3>
-					<dl>
-					{{range $k, $v := .Lists}}
-						<dt><a href="/{{$k}}">{{$k}}</a></dt>
-							<dd>Owner: {{$v.Owner}}</dd>
-							<dd>Permissions: {{$v.Permissions}}</dd>
-							<dd>Create date: {{$v.CreateDate.Format "02 Jan 06 15:04"}}</dd>
-					{{end}}
-					</dl>
-					<h3>Settings</h3>
-					<ul>
-						<li>Default list: {{.Configs.DefaultList}}</li>
-						<li>Default sort: {{.Configs.DefaultSort}}</li>
-						<li>Default filter: {{.Configs.DefaultFilter}}</li>
-					</ul>
-				</article>
-				<p><em>Active</em></p>
+				<form action="/profile" method="POST">
+					<article>
+						<h3>Lists</h3>
+						<dl>
+						{{range $k, $v := .Lists}}
+							<dt><a href="/{{$k}}">{{$k}}</a></dt>
+								<dd>Owner: {{$v.Owner}}</dd>
+								<dd>Permissions: {{$v.Permissions}}</dd>
+								<dd>Create date: {{$v.CreateDate.Format "02 Jan 06 15:04"}}</dd>
+						{{end}}
+						</dl>
+						<h3>Settings</h3>
+						<ul>
+							<li>
+								Default list: 
+								<select name="default_list">
+									{{$l := .Configs.DefaultList}}
+									{{range $k, $v := .Lists}}
+										<option {{if eq $k $l}}selected{{end}} value="{{$k}}">{{$k}}</option>
+									{{end}}
+								</select>
+							</li>
+							<li>Default sort: {{.Configs.DefaultSort}}</li>
+							<li>Default filter: {{.Configs.DefaultFilter}}</li>
+						</ul>
+					</article>
+					<p><em>Active</em></p>
+					<input type="submit" value="Update">
+				</form>
 			</section>
 		</main>
 	</body>
