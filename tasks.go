@@ -116,7 +116,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 	// Check permissions
 	if owner != user.Nick {
 		if getUserList(user, parts[1]).Permissions&WritePermission == 0 {
-			logErr("template", pages.ExecuteTemplate(w, "index.html", "no permission"))
+			logErr("template", pages.ExecuteTemplate(w, "error.html", "no permission"))
 			return
 		}
 	}
@@ -129,7 +129,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 
 	t, err := getTask(taskID, list.Name, owner)
 	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -172,7 +172,8 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 		if r.Method == http.MethodPost {
 			err := r.ParseForm()
 			if err != nil {
-				logErr("template", pages.ExecuteTemplate(w, "index.html", err))
+				w.WriteHeader(http.StatusBadRequest)
+				logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 				return
 			}
 
@@ -190,7 +191,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 
 			_, err = tasksDB.Put(t)
 			if err != nil {
-				logErr("template", pages.ExecuteTemplate(w, "index.html", err))
+				logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 				return
 			}
 
