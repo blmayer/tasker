@@ -114,7 +114,7 @@ Alice   | 23
 
 ` + "```" + `
 
-~~striked~~ through text using tildes: ` + "`~~`" + `.
+~~stroked~~ through text using tildes: ` + "`~~`" + `.
 
 ### Updating tasks
 There is a small link, edit task, below the date when you are seeing a task.
