@@ -535,7 +535,7 @@ func getUserFromCookie(c http.Cookie) (User, error) {
 		return User{}, err
 	}
 	if len(users) == 0 {
-		return User{}, fmt.Errorf("user not found")
+		return User{}, fmt.Errorf("session not found")
 	}
 
 	if users[0].Token.Expires.Unix() < time.Now().Unix() {

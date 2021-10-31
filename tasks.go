@@ -37,7 +37,7 @@ func serveList(w http.ResponseWriter, r *http.Request, user User, owner string) 
 
 	p.Tasks, err = getTasks(list, owner)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -201,8 +201,8 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 	case "delete":
 		err = tasksDB.Delete(t.Key)
 		if err != nil {
-			// TODO: Show error page
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
+			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 			return
 		}
 	}
