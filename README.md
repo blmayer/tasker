@@ -12,6 +12,7 @@
 - Simple HTML with clean interface
 - Uses Deta
 - Free for you
+- Tasks are encrypted by default
 
 
 ## Hosting
@@ -24,6 +25,7 @@ Cloud Run. You must provide only some environment variables:
 - PORT: optional port, defaults to 8080
 - EMAIL_FROM: the email to send mail to users
 - EMAIL_PASS: your gmail app password
+- KEY: the base64 of `rsa.PrivateKey` exported in PKCS1 format
 
 This project uses Gmail for sending email, contributions to support
 other providers are welcome.
