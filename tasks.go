@@ -1,6 +1,10 @@
 package main
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"sort"
@@ -11,6 +15,36 @@ import (
 	"github.com/deta/deta-go/service/base"
 	"github.com/gomarkdown/markdown"
 )
+
+func encrypt(text string) (string, error) {
+	cypher, err := rsa.EncryptOAEP(
+		sha256.New(),
+		rand.Reader,
+		&key.PublicKey,
+		[]byte(text), nil,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(cypher), nil
+}
+
+func decrypt(cypher string) (string, error) {
+	bytes, err := base64.StdEncoding.DecodeString(cypher)
+	if err != nil {
+		return "", err
+	}
+
+	text, err := rsa.DecryptOAEP(
+		sha256.New(),
+		rand.Reader,
+		key,
+		bytes, nil,
+	)
+
+	return string(text), err
+}
 
 func getUserList(user User, listName string) List {
 	if listName == "" {
@@ -61,8 +95,45 @@ func getTask(id int, listName, owner string) (t Task, err error) {
 		Dest: &tasks,
 	}
 	_, err = tasksDB.Fetch(&query)
+	if err != nil {
+		return
+	}
 	t = tasks[0]
+
+	// Decrypt
+	t.Title, err = decrypt(t.Title)
+	if err != nil {
+		return
+	}
+	t.Summary, err = decrypt(t.Summary)
+	if err != nil {
+		return
+	}
+	t.Description, err = decrypt(t.Description)
+	if err != nil {
+		return
+	}
+
 	return
+}
+
+func saveTask(t Task) error {
+	var err error
+	t.Title, err = encrypt(t.Title)
+	if err != nil {
+		return err
+	}
+	t.Summary, err = encrypt(t.Summary)
+	if err != nil {
+		return err
+	}
+	t.Description, err = encrypt(t.Description)
+	if err != nil {
+		return err
+	}
+
+	_, err = tasksDB.Put(t)
+	return err
 }
 
 func getTasks(list List, owner string) (t []Task, err error) {
@@ -75,6 +146,22 @@ func getTasks(list List, owner string) (t []Task, err error) {
 		Dest: &t,
 	}
 	_, err = tasksDB.Fetch(&query)
+
+	for i := range t {
+		// Decrypt
+		t[i].Title, err = decrypt(t[i].Title)
+		if err != nil {
+			return
+		}
+		t[i].Summary, err = decrypt(t[i].Summary)
+		if err != nil {
+			return
+		}
+		t[i].Description, err = decrypt(t[i].Description)
+		if err != nil {
+			return
+		}
+	}
 
 	return
 }
@@ -154,8 +241,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 		}
 
 		go func() {
-			_, err = tasksDB.Put(t)
-			if err != nil {
+			if err := saveTask(t); err != nil {
 				println("put error:", err)
 			}
 		}()
@@ -169,7 +255,11 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 			return
 		}
 	case "edit":
-		if r.Method == http.MethodPost {
+		switch r.Method {
+		case http.MethodGet:
+			logErr("template", pages.ExecuteTemplate(w, "edit.html", t))
+			return
+		case http.MethodPost:
 			err := r.ParseForm()
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
@@ -189,15 +279,11 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 			t.Creator = pol.Sanitize(r.Form.Get("creator"))
 			t.Date = newDate
 
-			_, err = tasksDB.Put(t)
-			if err != nil {
+			if err := saveTask(t); err != nil {
 				logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 				return
 			}
-
-			break
 		}
-		logErr("template", pages.ExecuteTemplate(w, "edit.html", t))
 	case "delete":
 		err = tasksDB.Delete(t.Key)
 		if err != nil {

@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"crypto/rsa"
+	"time"
+)
 
 const (
 	chars = "ABCDEFGHIJKLMNOPQRSTUVWabcdefghijklmnopqrstuvw1234567890/_."
@@ -61,6 +64,8 @@ type indexPayload struct {
 	List  List
 	Tasks []Task
 }
+
+var key *rsa.PrivateKey
 
 var reservedNames = []string{
 	"tasks", "new", "newlist", "profile", "reset", "login", "reset", "logout",
