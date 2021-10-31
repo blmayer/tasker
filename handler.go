@@ -40,8 +40,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 	user, err := getUserFromCookie(*cookies[0])
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 
