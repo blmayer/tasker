@@ -366,20 +366,20 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := User{
+	req := User{
 		Email: r.Form.Get("email"),
 		Nick:  r.Form.Get("nick"),
 	}
-	if user.Email == "" || user.Nick == "" {
+	if req.Email == "" || req.Nick == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "Empty email or nick"))
 		return
 	}
 
-	dbUsers := []User{}
+	users := []User{}
 	query := base.FetchInput{
-		Q:     base.Query{{"Nick": user.Nick}, {"Email": user.Email}},
-		Dest:  &dbUsers,
+		Q:     base.Query{{"Nick": req.Nick}, {"Email": req.Email}},
+		Dest:  &users,
 		Limit: 1,
 	}
 	_, err = usersDB.Fetch(&query)
@@ -387,7 +387,7 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
-	if len(dbUsers) == 0 {
+	if len(users) == 0 {
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
@@ -403,13 +403,13 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 		pass[i] = chars[int(n)%len(chars)]
 	}
 
-	go sendEmail(user.Email, user.Nick, string(pass))
+	go sendEmail(users[0].Email, users[0].Nick, string(pass))
 
 	up := base.Updates{
 		"Pass":  string(pass),
 		"Token": nil,
 	}
-	err = usersDB.Update(dbUsers[0].Key, up)
+	err = usersDB.Update(users[0].Key, up)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
