@@ -170,21 +170,13 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token := Token{
-		Expires: time.Now(),
-	}
-
-	err = usersDB.Update(user.Key, base.Updates{"Token": token})
+	err = usersDB.Update(user.Key, base.Updates{"Token": nil})
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
-	cookies[0].Domain = domain
-	cookies[0].Expires = time.Now()
-	cookies[0].MaxAge = 0
-	cookies[0].Path = "/"
-	http.SetCookie(w, cookies[0])
+	http.SetCookie(w, &http.Cookie{Domain: domain, Path: "/", MaxAge: -1})
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
