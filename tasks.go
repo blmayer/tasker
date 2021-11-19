@@ -85,7 +85,7 @@ func serveList(w http.ResponseWriter, r *http.Request, user User, owner string) 
 		p.Tasks[i].Description = string(md)
 	}
 
-	pages.ExecuteTemplate(w, "index.html", p)
+	logErr("template", pages.ExecuteTemplate(w, "index.html", p))
 }
 
 func getTask(id int, listName, owner string) (t Task, err error) {
@@ -110,9 +110,6 @@ func getTask(id int, listName, owner string) (t Task, err error) {
 		return
 	}
 	t.Description, err = decrypt(t.Description)
-	if err != nil {
-		return
-	}
 
 	return
 }
@@ -176,13 +173,13 @@ func serveTask(w http.ResponseWriter, r *http.Request, user User, owner string) 
 	}
 	taskID, err := strconv.Atoi(parts[2])
 	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
 	t, err := getTask(taskID, list.Name, owner)
 	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -210,7 +207,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 
 	taskID, err := strconv.Atoi(parts[2])
 	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "index.html", err))
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -224,7 +221,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 	case "new":
 		err := r.ParseForm()
 		if err != nil {
-			pages.ExecuteTemplate(w, "index.html", err)
+			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 			return
 		}
 
@@ -251,7 +248,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 		}
 		err = usersDB.Update(user.Key, up)
 		if err != nil {
-			pages.ExecuteTemplate(w, "index.html", err)
+			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 			return
 		}
 	case "edit":
