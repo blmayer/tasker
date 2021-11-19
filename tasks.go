@@ -10,13 +10,15 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/deta/deta-go/service/base"
 	"github.com/gomarkdown/markdown"
 )
 
-func encrypt(text string) (string, error) {
+func encrypt(text string, wg *sync.WaitGroup) (string, error) {
+	defer wg.Done()
 	cypher, err := rsa.EncryptOAEP(
 		sha256.New(),
 		rand.Reader,
@@ -30,7 +32,8 @@ func encrypt(text string) (string, error) {
 	return base64.StdEncoding.EncodeToString(cypher), nil
 }
 
-func decrypt(cypher string) (string, error) {
+func decrypt(cypher string, wg *sync.WaitGroup) (string, error) {
+	defer wg.Done()
 	bytes, err := base64.StdEncoding.DecodeString(cypher)
 	if err != nil {
 		return "", err
@@ -101,66 +104,99 @@ func getTask(id int, listName, owner string) (t Task, err error) {
 	t = tasks[0]
 
 	// Decrypt
-	t.Title, err = decrypt(t.Title)
-	if err != nil {
-		return
-	}
-	t.Summary, err = decrypt(t.Summary)
-	if err != nil {
-		return
-	}
-	t.Description, err = decrypt(t.Description)
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+	var anyErr error
+	go func() {
+		t.Title, err = decrypt(t.Title, &wg)
+		if err != nil {
+			anyErr = err
+		}
+	}()
+	go func() {
+		t.Summary, err = decrypt(t.Summary, &wg)
+		if err != nil {
+			anyErr = err
+		}
+	}()
+	go func() {
+		t.Description, err = decrypt(t.Description, &wg)
+		if err != nil {
+			anyErr = err
+		}
+	}()
+	wg.Wait()
 
-	return
+	return t, anyErr
 }
 
 func saveTask(t Task) error {
-	var err error
-	t.Title, err = encrypt(t.Title)
-	if err != nil {
-		return err
-	}
-	t.Summary, err = encrypt(t.Summary)
-	if err != nil {
-		return err
-	}
-	t.Description, err = encrypt(t.Description)
-	if err != nil {
-		return err
+	var err, anyErr error
+	wg := sync.WaitGroup{}
+	wg.Add(3)
+	go func() {
+		t.Title, err = encrypt(t.Title, &wg)
+		if err != nil {
+			anyErr = err
+		}
+	}()
+	go func() {
+		t.Summary, err = encrypt(t.Summary, &wg)
+		if err != nil {
+			anyErr = err
+		}
+	}()
+	go func() {
+		t.Description, err = encrypt(t.Description, &wg)
+		if err != nil {
+			anyErr = err
+		}
+	}()
+
+	if anyErr != nil {
+		return anyErr
 	}
 
 	_, err = tasksDB.Put(t)
 	return err
 }
 
-func getTasks(list List, owner string) (t []Task, err error) {
+func getTasks(list List, owner string) (ts []Task, err error) {
 	if list.Permissions&(ReadPermission|PublicPermission) == 0 {
 		err = fmt.Errorf("no permission on %s", list.Name)
 		return
 	}
 	query := base.FetchInput{
 		Q:    base.Query{{"List": list.Name, "ListOwner": owner}},
-		Dest: &t,
+		Dest: &ts,
 	}
 	_, err = tasksDB.Fetch(&query)
-
-	for i := range t {
-		// Decrypt
-		t[i].Title, err = decrypt(t[i].Title)
-		if err != nil {
-			return
-		}
-		t[i].Summary, err = decrypt(t[i].Summary)
-		if err != nil {
-			return
-		}
-		t[i].Description, err = decrypt(t[i].Description)
-		if err != nil {
-			return
-		}
+	if err != nil {
+		return
 	}
 
-	return
+	// Decode in parallel
+	wg := sync.WaitGroup{}
+	wg.Add(2 * len(ts))
+	var anyErr error
+	for i := range ts {
+		go func(i int) {
+			ts[i].Title, err = decrypt(ts[i].Title, &wg)
+			if err != nil {
+				anyErr = err
+			}
+		}(i)
+		go func(i int) {
+			ts[i].Summary, err = decrypt(ts[i].Summary, &wg)
+			if err != nil {
+				anyErr = err
+			}
+			ts[i].Description = ""
+		}(i)
+	}
+	wg.Wait()
+
+	return ts, anyErr
 }
 
 func serveTask(w http.ResponseWriter, r *http.Request, user User, owner string) {
