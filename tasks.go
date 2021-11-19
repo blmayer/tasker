@@ -237,20 +237,20 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 			Date:        time.Now(),
 		}
 
-		go func() {
-			if err := saveTask(t); err != nil {
-				println("put error:", err)
-			}
-		}()
-
-		up := base.Updates{
-			"Lists." + parts[1] + ".TaskNumber": usersDB.Util.Increment(1),
-		}
-		err = usersDB.Update(user.Key, up)
-		if err != nil {
+		if err := saveTask(t); err != nil {
 			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 			return
 		}
+
+		go func() {
+			up := base.Updates{
+				"Lists." + parts[1] + ".TaskNumber": usersDB.Util.Increment(1),
+			}
+			err = usersDB.Update(user.Key, up)
+			if err != nil {
+				println("error on user update:", err.Error())
+			}
+		}()
 	case "edit":
 		switch r.Method {
 		case http.MethodGet:
