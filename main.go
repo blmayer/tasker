@@ -27,7 +27,6 @@ var (
 	pol = bluemonday.UGCPolicy()
 
 	domain = "tasker.blmayer.dev"
-	// domain = "localhost"
 )
 
 func logErr(prefix string, err error) {
@@ -51,6 +50,7 @@ func main() {
 
 	if os.Getenv("DEBUG") != "" {
 		domain = "localhost"
+		println("running in debug mode")
 	}
 
 	detaKey := os.Getenv("DETA_KEY")
