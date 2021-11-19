@@ -157,6 +157,8 @@ func saveTask(t Task) error {
 		return anyErr
 	}
 
+	wg.Wait()
+
 	_, err = tasksDB.Put(t)
 	return err
 }
