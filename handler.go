@@ -18,8 +18,11 @@ func public(w http.ResponseWriter, r *http.Request) {
 		List:  List{Name: "tasks"},
 	}
 	parts := strings.Split(r.URL.Path, "/")
+	if parts[1] == "" {
+		parts[1] = "index.html"
+	}
 	if len(parts) < 3 {
-		logErr("template", pages.ExecuteTemplate(w, "index.html", p))
+		logErr("template", pages.ExecuteTemplate(w, parts[1], p))
 		return
 	}
 
