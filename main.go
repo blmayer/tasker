@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	//go:embed *.html *.css *.gohtml
+	//go:embed *.html *.css *.gohtml *.txt
 	content embed.FS
 
 	pages   *template.Template
@@ -38,7 +38,7 @@ func logErr(prefix string, err error) {
 func main() {
 	// Parse templates
 	var err error
-	pages, err = template.ParseFS(content, "*.html", "*.css", "*.gohtml")
+	pages, err = template.ParseFS(content, "*.html", "*.css", "*.gohtml", "*.txt")
 	if err != nil {
 		panic(err)
 	}
