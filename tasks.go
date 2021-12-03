@@ -67,7 +67,7 @@ func serveList(w http.ResponseWriter, r *http.Request, user User, owner string) 
 
 	var err error
 	p := indexPayload{
-		User:  defaultUser,
+		User:  user,
 		List:  list,
 		Tasks: tasks,
 	}
