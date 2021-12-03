@@ -179,7 +179,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{Domain: domain, Path: "/", MaxAge: -1})
+	http.SetCookie(w, &http.Cookie{Name: "token", Domain: domain, Path: "/", MaxAge: -1})
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
