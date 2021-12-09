@@ -183,6 +183,36 @@ func logout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
+func deleteAccount(w http.ResponseWriter, r *http.Request) {
+	cookies := r.Cookies()
+	if len(cookies) == 0 {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+	user, err := getUserFromCookie(*cookies[0])
+	if err != nil {
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+		return
+	}
+
+	for _, list := range user.Lists {
+		listTasks, err := getTasks(list, user.Nick)
+		logErr("getTasks", err)
+		for _, t := range listTasks {
+			logErr("delete task", tasksDB.Delete(t.Key))
+		}
+	}
+
+	err = usersDB.Delete(user.Key)
+	if err != nil {
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{Name: "token", Domain: domain, Path: "/", MaxAge: -1})
+	http.Redirect(w, r, "/", http.StatusFound)
+}
+
 func login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		logErr("template", pages.ExecuteTemplate(w, "login.html", tasks[2]))

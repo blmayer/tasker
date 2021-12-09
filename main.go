@@ -84,6 +84,7 @@ func main() {
 	http.HandleFunc("/profile", profile)
 	http.HandleFunc("/reset", resetPass)
 	http.HandleFunc("/newpass", newPass)
+	http.HandleFunc("/delete", deleteAccount)
 	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		panic(err)

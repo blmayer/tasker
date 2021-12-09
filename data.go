@@ -69,7 +69,7 @@ var key *rsa.PrivateKey
 
 var reservedNames = []string{
 	"tasks", "new", "newlist", "profile", "reset", "login", "reset", "logout",
-	"register", "newpass",
+	"register", "newpass", "delete",
 }
 
 var defaultUser = User{
