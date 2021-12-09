@@ -42,7 +42,7 @@
 						<h3>Settings</h3>
 						<ul>
 							<li>
-								Default list: 
+								Default list:
 								<select name="default_list">
 									{{$l := .Configs.DefaultList}}
 									{{range $k, $v := .Lists}}
@@ -52,6 +52,7 @@
 							</li>
 							<li>Default sort: {{.Configs.DefaultSort}}</li>
 							<li>Default filter: {{.Configs.DefaultFilter}}</li>
+							<li>Task display limit: <input type="number" name="task_display_limit" size="4" value="{{.Configs.TaskDisplayLimit}}"></li>
 						</ul>
 					</article>
 					<p><em>Active</em></p>

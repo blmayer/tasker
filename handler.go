@@ -149,6 +149,15 @@ func profile(w http.ResponseWriter, r *http.Request) {
 				v := pol.Sanitize(r.Form.Get(k))
 				up["Configs.DefaultList"] = v
 				user.Configs.DefaultList = v
+			case "task_display_limit":
+				lim, err := strconv.Atoi(r.Form.Get(k))
+				if err != nil {
+					logErr("update task limit", err)
+					logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+					return
+				}
+				up["Configs.TaskDisplayLimit"] = lim
+				user.Configs.TaskDisplayLimit = lim
 			}
 		}
 
@@ -196,7 +205,7 @@ func deleteAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, list := range user.Lists {
-		listTasks, err := getTasks(list, user.Nick)
+		listTasks, err := getTasks(list, user.Nick, 0)
 		logErr("getTasks", err)
 		for _, t := range listTasks {
 			logErr("delete task", tasksDB.Delete(t.Key))
@@ -480,7 +489,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		Configs: Config{
-			DefaultList: "tasks",
+			DefaultList:      "tasks",
+			TaskDisplayLimit: 20,
 		},
 	}
 	if newUser.Email == "" || newUser.Nick == "" || newUser.Pass == "" {

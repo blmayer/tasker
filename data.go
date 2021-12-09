@@ -43,9 +43,10 @@ type List struct {
 }
 
 type Config struct {
-	DefaultList   string
-	DefaultSort   string
-	DefaultFilter string
+	TaskDisplayLimit int
+	DefaultList      string
+	DefaultSort      string
+	DefaultFilter    string
 }
 
 type User struct {
