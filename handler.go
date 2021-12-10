@@ -21,17 +21,18 @@ func public(w http.ResponseWriter, r *http.Request) {
 	if parts[1] == "" {
 		parts[1] = "index.html"
 	}
-	if len(parts) < 3 {
-		logErr("template", pages.ExecuteTemplate(w, parts[1], p))
-		return
-	}
 
-	id, err := strconv.Atoi(parts[2])
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
-		return
+	switch len(parts) {
+	case 3:
+		id, err := strconv.Atoi(parts[2])
+		if err != nil {
+			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+			return
+		}
+		logErr("template", pages.ExecuteTemplate(w, "task.html", tasks[4-id]))
+	default:
+		logErr("template", pages.ExecuteTemplate(w, "index.html", p))
 	}
-	logErr("template", pages.ExecuteTemplate(w, "task.html", tasks[4-id]))
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
