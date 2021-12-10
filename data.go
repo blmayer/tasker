@@ -165,7 +165,33 @@ link: <a href="/login">login page</a>.</p>
 		ID:      1,
 		Title:   "Find this website",
 		List:    "tasks",
-		Summary: "Congratulations! You found this task manager.",
+		Summary: "Congratulations! You found this task manager. Click to learn more.",
+		Description: `<h3>About</h3>
+		<p>Tasker is a very simple list web app that everyone can use. I designed it to
+		be minimalistic, yes this weird looks is on purpose, and easy to use. But there
+		are some interesting features already:</p>
+		<ul>
+			<li>No javaScript</li>
+			<li>Simple HTML with clean interface</li>
+			<li>Free for you</li>
+			<li>Tasks are encrypted by default</li>
+			<li>Delete your account and data at any time</li>
+			<li>No emails</li>
+			<li>No ads</li>
+			<li>I don't use or sell your data</li>
+			<li>Completely open source</li>
+		</ul>
+		<p>Pretty good, huh? I intend to keep working on it on my free time, but I can't
+		promise you too much. If this software ever get usefull for you please leave your
+		feedback, or consider making a donation, that will be greatly appreciated.</p>
+		<p>Tasker is very light on resources, the main page is only 4.02Kb, and will look
+		good on your cell phone as well with minimum data usage, it is build with simplicity
+		on mind and will not install anything on your machine nor use the local storage.</p>
+		<p>To see the source code and the development progress please visit my GitHub page:
+		<a href="//github.com/blmayer/tasker">Tasker</a>, if you have any doubt, request or
+		feedback you can send an email to <a href:"mailto:bleemayer@gmail.com">me</a>, this
+		information can also be found on the footer of the main page.</p>
+		<p>Thank you!</p>`,
 		Status:  "Done",
 		Creator: "blmayer",
 		Date:    time.Date(2021, 8, 11, 0, 3, 15, 0, time.UTC),
