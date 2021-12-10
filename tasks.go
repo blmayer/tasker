@@ -274,6 +274,15 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 			Creator:     user.Nick,
 			Date:        time.Now(),
 		}
+		if due := r.Form.Get("due"); due != "" {
+			dueTime, err := time.Parse(time.RFC3339, due)
+			if err != nil {
+				logErr("time.Parse", err)
+				logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+				return
+			}
+			t.Due = &dueTime
+		}
 
 		if err := saveTask(t); err != nil {
 			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
@@ -305,6 +314,18 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 			newDate, err := time.Parse(time.RFC3339, r.Form.Get("date"))
 			if err != nil {
 				newDate = time.Now()
+			}
+			newDue := r.Form.Get("due")
+			if newDue != "" {
+				dueTime, err := time.Parse(time.RFC3339, newDue)
+				if err != nil {
+					logErr("time.Parse", err)
+					logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+					return
+				}
+				t.Due = &dueTime
+			} else {
+				t.Due = nil
 			}
 
 			t.Title = pol.Sanitize(r.Form.Get("title"))

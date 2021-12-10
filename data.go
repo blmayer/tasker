@@ -32,6 +32,7 @@ type Task struct {
 	Description string
 	Creator     string
 	Date        time.Time
+	Due         *time.Time
 }
 
 type List struct {

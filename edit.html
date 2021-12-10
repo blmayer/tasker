@@ -22,6 +22,9 @@
 					<h3>#{{.ID}} <input name="title" placeholder="Title" size="35" value="{{.Title}}" autofocus required maxlength="1950"></h3>
 					<p><input name="summary" placeholder="Summary" size="35" value="{{.Summary}}" autofocus maxlength="1950"></p>
 					<p><textarea name="description" placeholder="Task description" rows="10" cols="40" required maxlength="1950">{{.Description}}</textarea></p>
+					{{if .Due}}
+						<p><small><em>Due: <input type="datetime-local" name="due" value="{{.Due.String}}" autofocus> (optional)</em></small></p>
+					{{end}}
 					<p>
 						<select name="status">
 							<option {{if eq .Status "Active"}}selected{{end}} value="Active">Active</option>

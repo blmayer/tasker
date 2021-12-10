@@ -18,7 +18,7 @@ nav {
 
 main {
 	display: grid;
-	grid-template-columns: 150px 1fr;
+	grid-template-columns: 170px 1fr;
 	align-items: first baseline;
 }
 
@@ -42,8 +42,9 @@ dt > a {
 }
 
 span > div {
-	width: 150px;
+	width: 170px;
 	position: relative;
+	font-size: large;
 }
 
 span > div::after {

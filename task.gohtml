@@ -1,5 +1,8 @@
 <span>
     <div>{{.Date.Format "02 Jan 06 15:04"}}</div>
+    {{if .Due}}
+    <small><em>Due: {{.Due.Format "02 Jan 06 15:04"}}</em></small>
+    {{end}}
     <p>
         <a href="{{.ID}}/edit"><small>edit</small></a><br>
         <a href="{{.ID}}/delete"><small>delete</small></a>
