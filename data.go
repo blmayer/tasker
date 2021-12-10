@@ -86,11 +86,7 @@ var tasks = []Task{
 		List:    "tasks",
 		Title:   "Learn to use this",
 		Summary: "This task has a tutorial.",
-		Description: `# Welcome!
-Thank you for taking your time using this, I've done it for
-my own needs but decided to open it as a web service. So
-feel free to email me or use GitHub for droping a message.
-
+		Description: `
 ## First steps
 Follow the tasks on the main page, they will guide you to
 create a user and log in whenever you need.
@@ -124,11 +120,6 @@ Alice   | 23
 
 ### Updating tasks
 There is a small link, edit task, below the date when you are seeing a task.
-
-### Notes
-This site doesn't use JavaScript, I try to make it as simple as possible,
-so authentication uses cookies, but with a strict security, to create a
-session.
 
 ***
 
