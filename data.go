@@ -12,6 +12,10 @@ const (
 	ReadPermission
 	WritePermission
 	PublicPermission
+
+	TokenExpiredError = Error(iota)
+	NoSessionError
+	EmptyValueError
 )
 
 type Token struct {
@@ -20,6 +24,18 @@ type Token struct {
 }
 
 type Permissions int
+
+type Error int
+
+func (e Error) Error() string {
+	switch e {
+	case TokenExpiredError:
+		return "token expired"
+	case NoSessionError:
+		return "session not found"
+	}
+	return "unknown error"
+}
 
 type Task struct {
 	Key         string `json:"key"`

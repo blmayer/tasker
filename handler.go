@@ -18,8 +18,17 @@ func public(w http.ResponseWriter, r *http.Request) {
 		List:  List{Name: "tasks"},
 	}
 	parts := strings.Split(r.URL.Path, "/")
-	if parts[1] == "" {
+	switch parts[1] {
+	case "":
 		parts[1] = "index.html"
+	case "favicon.ico":
+		cont, err := content.ReadFile("favicon.ico")
+		if err != nil {
+			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+			return
+		}
+		w.Write(cont)
+		return
 	}
 
 	switch len(parts) {
@@ -44,6 +53,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 
 	user, err := getUserFromCookie(*cookies[0])
 	if err != nil {
+		logErr("getUserFromCookie", err)
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
@@ -558,7 +568,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 func getUserFromCookie(c http.Cookie) (User, error) {
 	userSession := c.Value
 	if userSession == "" {
-		return User{}, fmt.Errorf("empty value")
+		return User{}, EmptyValueError
 	}
 
 	users := []User{}
@@ -571,11 +581,11 @@ func getUserFromCookie(c http.Cookie) (User, error) {
 		return User{}, err
 	}
 	if len(users) == 0 {
-		return User{}, fmt.Errorf("session not found")
+		return User{}, NoSessionError
 	}
 
 	if users[0].Token.Expires.Unix() < time.Now().Unix() {
-		return User{}, fmt.Errorf("token expired")
+		return User{}, TokenExpiredError
 	}
 	return users[0], nil
 }
