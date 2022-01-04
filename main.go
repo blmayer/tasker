@@ -38,7 +38,7 @@ func logErr(prefix string, err error) {
 func main() {
 	// Parse templates
 	var err error
-	pages, err = template.ParseFS(content, "*.html", "*.css", "*.gohtml", "*.txt")
+	pages, err = template.ParseFS(content, "*.html", "*.css", "*.gohtml", "*.txt", "*.ico")
 	if err != nil {
 		panic(err)
 	}
