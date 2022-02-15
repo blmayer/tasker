@@ -101,6 +101,10 @@ func getTask(id int, listName, owner string) (t Task, err error) {
 	if err != nil {
 		return
 	}
+
+	if len(tasks) == 0 {
+		return
+	}
 	t = tasks[0]
 
 	// Decrypt
