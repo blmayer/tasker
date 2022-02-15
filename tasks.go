@@ -270,7 +270,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 		t := Task{
 			ID:          list.TaskNumber,
 			List:        list.Name,
-			ListOwner:   t.ListOwner,
+			ListOwner:   list.Owner,
 			Title:       pol.Sanitize(r.Form.Get("title")),
 			Summary:     pol.Sanitize(r.Form.Get("summary")),
 			Description: pol.Sanitize(r.Form.Get("description")),
