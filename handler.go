@@ -45,18 +45,29 @@ func public(w http.ResponseWriter, r *http.Request) {
 }
 
 func index(w http.ResponseWriter, r *http.Request) {
-	cookies := r.Cookies()
-	if len(cookies) == 0 {
+	nick, pass, ok := r.BasicAuth()
+	if !ok {
 		public(w, r)
 		return
 	}
 
-	user, err := getUserFromCookie(*cookies[0])
+	sum := sha256.Sum256([]byte(pass))
+	dbUsers := []User{}
+	query := base.FetchInput{
+		Q:    base.Query{{"Nick": nick, "Pass": fmt.Sprintf("%x", sum)}},
+		Dest: &dbUsers,
+	}
+	_, err := usersDB.Fetch(&query)
 	if err != nil {
-		logErr("getUserFromCookie", err)
-		http.Redirect(w, r, "/login", http.StatusFound)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
+	if len(dbUsers) == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
+		return
+	}
+	user := dbUsers[0]
 
 	parts := strings.Split(r.URL.Path, "/")
 	owner := r.URL.Query().Get("owner")
@@ -75,18 +86,31 @@ func index(w http.ResponseWriter, r *http.Request) {
 }
 
 func newList(w http.ResponseWriter, r *http.Request) {
-	cookies := r.Cookies()
-	if len(cookies) == 0 {
-		public(w, r)
+	nick, pass, ok := r.BasicAuth()
+	if !ok {
+		w.Header().Set("WWW-Authenticate", "Basic")
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "login.html", tasks[2]))
 		return
 	}
 
-	user, err := getUserFromCookie(*cookies[0])
+	sum := sha256.Sum256([]byte(pass))
+	dbUsers := []User{}
+	query := base.FetchInput{
+		Q:    base.Query{{"Nick": nick, "Pass": fmt.Sprintf("%x", sum)}},
+		Dest: &dbUsers,
+	}
+	_, err := usersDB.Fetch(&query)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
+	if len(dbUsers) == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
+		return
+	}
+	user := dbUsers[0]
 
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
@@ -135,16 +159,32 @@ func newList(w http.ResponseWriter, r *http.Request) {
 }
 
 func profile(w http.ResponseWriter, r *http.Request) {
-	cookies := r.Cookies()
-	if len(cookies) != 1 {
-		http.Redirect(w, r, "/login", http.StatusFound)
+	nick, pass, ok := r.BasicAuth()
+	if !ok {
+		w.Header().Set("WWW-Authenticate", "Basic")
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "login.html", tasks[2]))
 		return
 	}
-	user, err := getUserFromCookie(*cookies[0])
+
+	sum := sha256.Sum256([]byte(pass))
+	dbUsers := []User{}
+	query := base.FetchInput{
+		Q:    base.Query{{"Nick": nick, "Pass": fmt.Sprintf("%x", sum)}},
+		Dest: &dbUsers,
+	}
+	_, err := usersDB.Fetch(&query)
 	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
+	if len(dbUsers) == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
+		return
+	}
+	user := dbUsers[0]
+
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
 		if err != nil {
@@ -182,38 +222,41 @@ func profile(w http.ResponseWriter, r *http.Request) {
 }
 
 func logout(w http.ResponseWriter, r *http.Request) {
-	cookies := r.Cookies()
-	if len(cookies) == 0 {
-		http.Redirect(w, r, "/", http.StatusFound)
+	_, _, ok := r.BasicAuth()
+	if ok {
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "logout.html", time.Now()))
 		return
 	}
-	user, err := getUserFromCookie(*cookies[0])
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
-		return
-	}
-
-	err = usersDB.Update(user.Key, base.Updates{"Token": nil})
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
-		return
-	}
-
-	http.SetCookie(w, &http.Cookie{Name: "token", Domain: domain, Path: "/", MaxAge: -1})
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 func deleteAccount(w http.ResponseWriter, r *http.Request) {
-	cookies := r.Cookies()
-	if len(cookies) == 0 {
-		http.Redirect(w, r, "/", http.StatusFound)
+	nick, pass, ok := r.BasicAuth()
+	if !ok {
+		w.Header().Set("WWW-Authenticate", "Basic")
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "login.html", tasks[2]))
 		return
 	}
-	user, err := getUserFromCookie(*cookies[0])
+
+	sum := sha256.Sum256([]byte(pass))
+	dbUsers := []User{}
+	query := base.FetchInput{
+		Q:    base.Query{{"Nick": nick, "Pass": fmt.Sprintf("%x", sum)}},
+		Dest: &dbUsers,
+	}
+	_, err := usersDB.Fetch(&query)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
+	if len(dbUsers) == 0 {
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
+		return
+	}
+	user := dbUsers[0]
 
 	for _, list := range user.Lists {
 		listTasks, err := getTasks(list, user.Nick, 0)
@@ -229,25 +272,22 @@ func deleteAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{Name: "token", Domain: domain, Path: "/", MaxAge: -1})
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, "/", http.StatusUnauthorized)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
+	nick, pass, ok := r.BasicAuth()
+	if !ok {
+		w.Header().Set("WWW-Authenticate", "Basic")
+		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "login.html", tasks[2]))
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
-		return
-	}
-
+	sum := sha256.Sum256([]byte(pass))
 	user := User{
-		Nick:       r.Form.Get("nick"),
-		Pass:       r.Form.Get("password"),
+		Nick:       nick,
+		Pass:       fmt.Sprintf("%x", sum),
 		CreateDate: time.Now(),
 	}
 	if user.Nick == "" || user.Pass == "" {
@@ -258,10 +298,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	dbUsers := []User{}
 	query := base.FetchInput{
-		Q:    base.Query{{"Nick": user.Nick}},
+		Q:    base.Query{{"Nick": user.Nick, "Pass": user.Pass}},
 		Dest: &dbUsers,
 	}
-	_, err = usersDB.Fetch(&query)
+	_, err := usersDB.Fetch(&query)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
@@ -271,52 +311,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
 	}
-
-	if len(user.Pass) == 4 && user.Pass == dbUsers[0].Pass {
-		logErr("template", pages.ExecuteTemplate(w, "newpass.html", user))
-		return
-	}
-
-	sum := sha256.Sum256([]byte(user.Pass))
-	user.Pass = fmt.Sprintf("%x", sum)
-
-	if user.Pass != dbUsers[0].Pass {
-		w.WriteHeader(http.StatusUnauthorized)
-		logErr("template", pages.ExecuteTemplate(w, "error.html", "Wrong password"))
-		return
-	}
-
-	t := make([]byte, 128)
-	_, err = rand.Read(t)
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
-		return
-	}
-	for i, n := range t {
-		t[i] = chars[int(n)%len(chars)]
-	}
-	token := Token{
-		Value:   string(t),
-		Expires: time.Now().Add(120 * time.Hour),
-	}
-
-	err = usersDB.Update(dbUsers[0].Key, base.Updates{"Token": token})
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
-		return
-	}
-
-	http.SetCookie(
-		w,
-		&http.Cookie{
-			Name:     "token",
-			Value:    string(t),
-			Domain:   domain,
-			Secure:   domain != "localhost",
-			SameSite: http.SameSiteStrictMode,
-			Expires:  token.Expires,
-		},
-	)
 
 	http.Redirect(w, r, "/"+dbUsers[0].Configs.DefaultList, http.StatusFound)
 }
@@ -367,43 +361,17 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t := make([]byte, 128)
-	_, err = rand.Read(t)
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
-		return
-	}
-	for i, n := range t {
-		t[i] = chars[int(n)%len(chars)]
-	}
-	token := Token{
-		Value:   string(t),
-		Expires: time.Now().Add(120 * time.Hour),
-	}
-
 	sum := sha256.Sum256([]byte(user.Pass))
 	user.Pass = fmt.Sprintf("%x", sum)
 
-	up := base.Updates{"Pass": user.Pass, "Token": token}
+	up := base.Updates{"Pass": user.Pass}
 	err = usersDB.Update(dbUsers[0].Key, up)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
-	http.SetCookie(
-		w,
-		&http.Cookie{
-			Name:     "token",
-			Value:    string(t),
-			Domain:   domain,
-			Secure:   domain != "localhost",
-			SameSite: http.SameSiteStrictMode,
-			Expires:  token.Expires,
-		},
-	)
-
-	http.Redirect(w, r, "/", http.StatusFound)
+	http.Redirect(w, r, "/tasks/3", http.StatusFound)
 }
 
 func resetPass(w http.ResponseWriter, r *http.Request) {
@@ -551,41 +519,5 @@ func register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(
-		w,
-		&http.Cookie{
-			Name:     "token",
-			Value:    string(token),
-			Domain:   domain,
-			Secure:   domain != "localhost",
-			SameSite: http.SameSiteStrictMode,
-			Expires:  newUser.Token.Expires,
-		},
-	)
-	http.Redirect(w, r, "/tasks", http.StatusFound)
-}
-
-func getUserFromCookie(c http.Cookie) (User, error) {
-	userSession := c.Value
-	if userSession == "" {
-		return User{}, EmptyValueError
-	}
-
-	users := []User{}
-	query := base.FetchInput{
-		Q:    base.Query{{"Token.Value": userSession}},
-		Dest: &users,
-	}
-	_, err := usersDB.Fetch(&query)
-	if err != nil {
-		return User{}, err
-	}
-	if len(users) == 0 {
-		return User{}, NoSessionError
-	}
-
-	if users[0].Token.Expires.Unix() < time.Now().Unix() {
-		return User{}, TokenExpiredError
-	}
-	return users[0], nil
+	http.Redirect(w, r, "/tasks/3", http.StatusFound)
 }

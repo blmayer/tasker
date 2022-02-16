@@ -160,10 +160,10 @@ link: <a href="/login">login page</a>.</p>
 		Date:    time.Date(2021, 8, 16, 22, 34, 44, 0, time.UTC),
 	},
 	{
-		ID:          2,
-		Title:       "Create your user",
-		List:        "tasks",
-		Summary:     "The description of this task has a link to the registration page.",
+		ID:      2,
+		Title:   "Create your user",
+		List:    "tasks",
+		Summary: "The description of this task has a link to the registration page.",
 		Description: `<p>Here is the link: <a href="/register">registration page</a>. Welcome!</p>
 <h3>Terms and conditions</h3>
 <p>
@@ -254,9 +254,9 @@ the details below:
 <a href="mailto://bleemayer@gmail.com">bleemayer@gmail.com</a>
 <p>
 This document was last updated on January 24, 2022</p>`,
-		Status:      "Active",
-		Creator:     "blmayer",
-		Date:        time.Date(2021, 8, 16, 22, 10, 54, 0, time.UTC),
+		Status:  "Active",
+		Creator: "blmayer",
+		Date:    time.Date(2021, 8, 16, 22, 10, 54, 0, time.UTC),
 	},
 	{
 		ID:      1,
@@ -269,6 +269,7 @@ This document was last updated on January 24, 2022</p>`,
 		are some interesting features already:</p>
 		<ul>
 			<li>No javaScript</li>
+			<li>No cookies</li>
 			<li>Simple HTML with clean interface</li>
 			<li>Free for you</li>
 			<li>Tasks are encrypted by default</li>
