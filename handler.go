@@ -63,6 +63,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if len(dbUsers) == 0 {
+		w.Header().Set("WWW-Authenticate", "Basic")
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
@@ -280,25 +281,21 @@ func login(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		w.Header().Set("WWW-Authenticate", "Basic")
 		w.WriteHeader(http.StatusUnauthorized)
-		logErr("template", pages.ExecuteTemplate(w, "login.html", tasks[2]))
+		logErr("template", pages.ExecuteTemplate(w, "logout.html", time.Now()))
 		return
 	}
-
-	sum := sha256.Sum256([]byte(pass))
-	user := User{
-		Nick:       nick,
-		Pass:       fmt.Sprintf("%x", sum),
-		CreateDate: time.Now(),
-	}
-	if user.Nick == "" || user.Pass == "" {
+	if nick == "" || pass == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "Empty fields"))
 		return
 	}
 
+	sum := sha256.Sum256([]byte(pass))
+	pass = fmt.Sprintf("%x", sum)
+
 	dbUsers := []User{}
 	query := base.FetchInput{
-		Q:    base.Query{{"Nick": user.Nick, "Pass": user.Pass}},
+		Q:    base.Query{{"Nick": nick, "Pass": pass}},
 		Dest: &dbUsers,
 	}
 	_, err := usersDB.Fetch(&query)
@@ -308,7 +305,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(dbUsers) == 0 {
 		w.WriteHeader(http.StatusUnauthorized)
-		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "User and pass are incorrect"))
 		return
 	}
 
