@@ -38,6 +38,14 @@
 					</a>
 				</section>
 			{{end}}
+			<center>
+			{{if gt .Page 0}}
+				<a href="?page={{minus .Page 1}}">{{minus .Page 1}} | </a>
+			{{end}}
+			{{if eq .User.Configs.TaskDisplayLimit (len .Tasks)}}
+				<a href="?page={{plus .Page 1}}">{{plus .Page 1}}</a>
+			{{end}}
+			</center>
 		</main>
 		{{template "footer.html" .User}}
 	</body>

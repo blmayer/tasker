@@ -81,6 +81,7 @@ type indexPayload struct {
 	User  User
 	List  List
 	Tasks []Task
+	Page  int
 }
 
 var key *rsa.PrivateKey

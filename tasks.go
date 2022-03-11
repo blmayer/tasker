@@ -65,14 +65,21 @@ func serveList(w http.ResponseWriter, r *http.Request, user User, owner string) 
 		return
 	}
 
+	page := 0
+	pagination := r.URL.Query().Get("page")
+	if pagination != "" {
+		page, _ = strconv.Atoi(pagination)
+	}
+
 	var err error
 	p := indexPayload{
 		User:  user,
 		List:  list,
 		Tasks: tasks,
+		Page:  page,
 	}
 
-	p.Tasks, err = getTasks(list, owner, user.Configs.TaskDisplayLimit)
+	p.Tasks, err = getTasks(list, owner, user.Configs.TaskDisplayLimit, page)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
@@ -166,13 +173,13 @@ func saveTask(t Task) error {
 	return err
 }
 
-func getTasks(list List, owner string, limit int) (ts []Task, err error) {
+func getTasks(list List, owner string, limit, lastID int) (ts []Task, err error) {
 	if list.Permissions&(ReadPermission|PublicPermission) == 0 {
 		err = fmt.Errorf("no permission on %s", list.Name)
 		return
 	}
 	query := base.FetchInput{
-		Q:     base.Query{{"List": list.Name, "ListOwner": owner}},
+		Q:     base.Query{{"List": list.Name, "ListOwner": owner, "ID?gte": lastID * limit}},
 		Dest:  &ts,
 		Limit: limit,
 	}
