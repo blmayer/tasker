@@ -79,7 +79,7 @@ func serveList(w http.ResponseWriter, r *http.Request, user User, owner string) 
 		Page:  page,
 	}
 
-	p.Tasks, err = getTasks(list, owner, user.Configs.TaskDisplayLimit, page)
+	p.Tasks, err = getTasks(list, owner, user, page)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
@@ -173,16 +173,20 @@ func saveTask(t Task) error {
 	return err
 }
 
-func getTasks(list List, owner string, limit, lastID int) (ts []Task, err error) {
+func getTasks(list List, owner string, user User, page int) (ts []Task, err error) {
 	if list.Permissions&(ReadPermission|PublicPermission) == 0 {
 		err = fmt.Errorf("no permission on %s", list.Name)
 		return
 	}
 	query := base.FetchInput{
-		Q:     base.Query{{"List": list.Name, "ListOwner": owner, "ID?gte": lastID * limit}},
+		Q:     base.Query{{"List": list.Name, "ListOwner": owner, "ID?lte": user.Lists[list.Name].TaskNumber - page*user.Configs.TaskDisplayLimit}},
 		Dest:  &ts,
-		Limit: limit,
+		Limit: user.Configs.TaskDisplayLimit,
 	}
+
+	// if lastID > 0 {
+	// 	query.Q = append(query.Q, map[string]interface{}{"ID?gte": user.Lists[list.Name].TaskNumber - lastID*user.Configs.TaskDisplayLimit})
+	// }
 	_, err = tasksDB.Fetch(&query)
 	if err != nil {
 		return

@@ -260,7 +260,7 @@ func deleteAccount(w http.ResponseWriter, r *http.Request) {
 	user := dbUsers[0]
 
 	for _, list := range user.Lists {
-		listTasks, err := getTasks(list, user.Nick, user.Configs.TaskDisplayLimit, 0)
+		listTasks, err := getTasks(list, user.Nick, user, 0)
 		logErr("getTasks", err)
 		for _, t := range listTasks {
 			logErr("delete task", tasksDB.Delete(t.Key))
