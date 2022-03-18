@@ -169,7 +169,7 @@ link: <a href="/login">login page</a>.</p>
 <h3>Terms and conditions</h3>
 <p>
 These terms and conditions (“Agreement”) set forth the general terms and conditions of your use of the
-tasker.saucecode.bar website (“Website” or “Service”) and any of its related products and
+tasker.blmayer.dev website (“Website” or “Service”) and any of its related products and
 services (collectively, “Services”). This Agreement is legally binding between you (“User”, “you” or “your”)
 and this Website operator (“Operator”, “we”, “us” or “our”). If you are entering into this agreement on behalf
 of a business or other legal entity, you represent that you have the authority to bind such entity to this agreement
@@ -186,39 +186,19 @@ conditions generator at https://www.websitepolicies.com/terms-and-conditions-gen
 If you create an account on the Website, you are responsible for maintaining the security of your account and you
 are fully responsible for all activities that occur under the account and any other actions taken in connection with
 it. We may, but have no obligation to, monitor and review new accounts before you may sign in and start using the
-Services. Providing false contact information of any kind may result in the termination of your account. You must
-immediately notify us of any unauthorized uses of your account or any other breaches of security. We will not be
-liable for any acts or omissions by you, including any damages of any kind incurred as a result of such acts
+Services. You must immediately notify us of any unauthorized uses of your account or any other breaches of security.
+We will not be liable for any acts or omissions by you, including any damages of any kind incurred as a result of such acts
 or omissions.
 </p>
 <h3>User content</h3>
 <p>
 We do not own any data, information or material (collectively, “Content”) that you submit on the Website in the
 course of using the Service. You shall have sole responsibility for the accuracy, quality, integrity, legality,
-reliability, appropriateness, and intellectual property ownership or right to use of all submitted Content. We
-may, but have no obligation to, monitor and review the Content on the Website submitted or created using our
-Services by you. You grant us permission to access, copy, distribute, store, transmit, reformat, display and
-perform the Content of your user account solely as required for the purpose of providing the Services to you.
-Unless specifically permitted by you, your use of the Website and Services does not grant us the license to use,
-reproduce, adapt, modify, publish or distribute the Content created by you or stored in your user account for
-commercial, marketing or any similar purpose.
-</p>
-<h3>Adult content</h3>
-<p>
-Please be aware that there may be certain adult or mature content available on the Website. Where there is mature
-or adult content, individuals who are less than 18 years of age or are not permitted to access such content under
-the laws of any applicable jurisdiction may not access such content. If we learn that anyone under the age of 18
-seeks to conduct a transaction through the Services, we will require verified parental consent, in accordance with
-the Children’s Online Privacy Protection Act of 1998 (“COPPA”). Certain areas of the Website and Services may not
-be available to children under 18 under any circumstances.
-</p>
+reliability, appropriateness, and intellectual property ownership or right to use of all submitted Content. </p>
 <h3>Backups</h3>
 <p>
 We are not responsible for the Content residing on the Website. In no event shall we be held liable for any loss
-of any Content. It is your sole responsibility to maintain appropriate backup of your Content. Notwithstanding the
-foregoing, on some occasions and in certain circumstances, with absolutely no obligation, we may be able to restore
-some or all of your data that has been deleted as of a certain date and time when we may have backed up data for our
-own purposes. We make no guarantee that the data you need will be available.
+of any Content. It is your sole responsibility to maintain appropriate backup of your Content.
 </p>
 <h3>Links to other resources</h3>
 <p>
@@ -254,7 +234,7 @@ the details below:
 </p>
 <a href="mailto://bleemayer@gmail.com">bleemayer@gmail.com</a>
 <p>
-This document was last updated on January 24, 2022</p>`,
+This document was last updated on March 18, 2022</p>`,
 		Status:  "Active",
 		Creator: "blmayer",
 		Date:    time.Date(2021, 8, 16, 22, 10, 54, 0, time.UTC),
