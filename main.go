@@ -8,8 +8,7 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/deta/deta-go/deta"
-	"github.com/deta/deta-go/service/base"
+	"github.com/graphlayer/db/client"
 
 	"github.com/gomarkdown/markdown"
 
@@ -21,8 +20,7 @@ var (
 	content embed.FS
 
 	pages   *template.Template
-	usersDB *base.Base
-	tasksDB *base.Base
+	db client.DB
 
 	pol = bluemonday.UGCPolicy()
 )
@@ -59,14 +57,10 @@ func main() {
 		println("running in debug mode")
 	}
 
-	detaKey := os.Getenv("DETA_KEY")
-	d, err := deta.New(deta.WithProjectKey(detaKey))
-	logErr("deta client", err)
-
-	usersDB, err = base.New(d, "users")
-	logErr("deta base", err)
-	tasksDB, err = base.New(d, "tasks")
-	logErr("deta base", err)
+	db, err = client.New("http://localhost:8080", "blmayer", "X916482dXhV")
+	if err != nil {
+		panic(err)
+	}
 
 	encKey := os.Getenv("KEY")
 	encText, err := base64.StdEncoding.DecodeString(encKey)

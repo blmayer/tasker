@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/deta/deta-go/service/base"
 )
 
 func public(w http.ResponseWriter, r *http.Request) {
@@ -52,23 +50,22 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sum := sha256.Sum256([]byte(pass))
-	dbUsers := []User{}
-	query := base.FetchInput{
-		Q:    base.Query{{"Nick": nick, "Pass": fmt.Sprintf("%x", sum)}},
-		Dest: &dbUsers,
-	}
-	_, err := usersDB.Fetch(&query)
+	user, err := getUser(nick)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
-	if len(dbUsers) == 0 {
+	if user.Nick == "" {
 		w.Header().Set("WWW-Authenticate", "Basic")
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
+	} else if user.Pass != fmt.Sprintf("%x", sum) {
+		w.Header().Set("WWW-Authenticate", "Basic")
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Wrong password"))
+		return
 	}
-	user := dbUsers[0]
 
 	parts := strings.Split(r.URL.Path, "/")
 	owner := r.URL.Query().Get("owner")
@@ -96,22 +93,22 @@ func newList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sum := sha256.Sum256([]byte(pass))
-	dbUsers := []User{}
-	query := base.FetchInput{
-		Q:    base.Query{{"Nick": nick, "Pass": fmt.Sprintf("%x", sum)}},
-		Dest: &dbUsers,
-	}
-	_, err := usersDB.Fetch(&query)
+	user, err := getUser(nick)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
-	if len(dbUsers) == 0 {
+	if user.Nick == "" {
+		w.Header().Set("WWW-Authenticate", "Basic")
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
+	} else if user.Pass != fmt.Sprintf("%x", sum) {
+		w.Header().Set("WWW-Authenticate", "Basic")
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Wrong password"))
+		return
 	}
-	user := dbUsers[0]
 
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
@@ -142,8 +139,9 @@ func newList(w http.ResponseWriter, r *http.Request) {
 			newList.Permissions |= PublicPermission
 		}
 
-		up := map[string]interface{}{"Lists." + name: newList}
-		err = usersDB.Update(user.Key, up)
+		// up := map[string]interface{}{"Lists." + name: newList}
+		// err = usersDB.Update(user.Key, up)
+		err = updateUser(user)
 		if err != nil {
 			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 			return
@@ -169,22 +167,22 @@ func profile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sum := sha256.Sum256([]byte(pass))
-	dbUsers := []User{}
-	query := base.FetchInput{
-		Q:    base.Query{{"Nick": nick, "Pass": fmt.Sprintf("%x", sum)}},
-		Dest: &dbUsers,
-	}
-	_, err := usersDB.Fetch(&query)
+	user, err := getUser(nick)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
-	if len(dbUsers) == 0 {
+	if user.Nick == "" {
+		w.Header().Set("WWW-Authenticate", "Basic")
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
+	} else if user.Pass != fmt.Sprintf("%x", sum) {
+		w.Header().Set("WWW-Authenticate", "Basic")
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Wrong password"))
+		return
 	}
-	user := dbUsers[0]
 
 	if r.Method == http.MethodPost {
 		err := r.ParseForm()
@@ -213,7 +211,8 @@ func profile(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		err = usersDB.Update(user.Key, up)
+		// err = usersDB.Update(user.Key, up)
+		err = updateUser(user)
 		if err != nil {
 			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 			return
@@ -242,32 +241,32 @@ func deleteAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sum := sha256.Sum256([]byte(pass))
-	dbUsers := []User{}
-	query := base.FetchInput{
-		Q:    base.Query{{"Nick": nick, "Pass": fmt.Sprintf("%x", sum)}},
-		Dest: &dbUsers,
-	}
-	_, err := usersDB.Fetch(&query)
+	user, err := getUser(nick)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
-	if len(dbUsers) == 0 {
+	if user.Nick == "" {
+		w.Header().Set("WWW-Authenticate", "Basic")
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
+	} else if user.Pass != fmt.Sprintf("%x", sum) {
+		w.Header().Set("WWW-Authenticate", "Basic")
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Wrong password"))
+		return
 	}
-	user := dbUsers[0]
 
 	for _, list := range user.Lists {
 		listTasks, err := getTasks(list, user.Nick, user, 0)
 		logErr("getTasks", err)
 		for _, t := range listTasks {
-			logErr("delete task", tasksDB.Delete(t.Key))
+			logErr("delete task", db.Fetch(db.Del().Key("tasks/"+t.Key), nil))
 		}
 	}
 
-	err = usersDB.Delete(user.Key)
+	err = db.Fetch(db.Del().Key("users/"+user.Key),nil)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
@@ -291,25 +290,24 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sum := sha256.Sum256([]byte(pass))
-	pass = fmt.Sprintf("%x", sum)
-
-	dbUsers := []User{}
-	query := base.FetchInput{
-		Q:    base.Query{{"Nick": nick, "Pass": pass}},
-		Dest: &dbUsers,
-	}
-	_, err := usersDB.Fetch(&query)
+	user, err := getUser(nick)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
-	if len(dbUsers) == 0 {
+	if user.Nick == "" {
+		w.Header().Set("WWW-Authenticate", "Basic")
 		w.WriteHeader(http.StatusUnauthorized)
-		logErr("template", pages.ExecuteTemplate(w, "error.html", "User and pass are incorrect"))
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
+		return
+	} else if user.Pass != fmt.Sprintf("%x", sum) {
+		w.Header().Set("WWW-Authenticate", "Basic")
+		w.WriteHeader(http.StatusUnauthorized)
+		logErr("template", pages.ExecuteTemplate(w, "error.html", "Wrong password"))
 		return
 	}
 
-	http.Redirect(w, r, "/"+dbUsers[0].Configs.DefaultList, http.StatusFound)
+	http.Redirect(w, r, "/"+user.Configs.DefaultList, http.StatusFound)
 }
 
 func newPass(w http.ResponseWriter, r *http.Request) {
@@ -336,23 +334,18 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbUsers := []User{}
-	query := base.FetchInput{
-		Q:    base.Query{{"Nick": user.Nick}},
-		Dest: &dbUsers,
-	}
-	_, err = usersDB.Fetch(&query)
+	dbUser, err := getUser(user.Nick)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
-	if len(dbUsers) == 0 {
+	if user.Nick == "" {
+		w.Header().Set("WWW-Authenticate", "Basic")
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
 	}
-
-	if temp != dbUsers[0].Pass {
+	if temp != dbUser.Pass {
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "wrong temp password"))
 		return
@@ -361,8 +354,9 @@ func newPass(w http.ResponseWriter, r *http.Request) {
 	sum := sha256.Sum256([]byte(user.Pass))
 	user.Pass = fmt.Sprintf("%x", sum)
 
-	up := base.Updates{"Pass": user.Pass}
-	err = usersDB.Update(dbUsers[0].Key, up)
+	// up := base.Updates{"Pass": user.Pass}
+	// err = usersDB.Update(dbUsers[0].Key, up)
+	err = updateUser(dbUser)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
@@ -394,23 +388,17 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users := []User{}
-	query := base.FetchInput{
-		Q:     base.Query{{"Nick": req.Nick}, {"Email": req.Email}},
-		Dest:  &users,
-		Limit: 1,
-	}
-	_, err = usersDB.Fetch(&query)
+	user, err := getUser(req.Nick)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
-	if len(users) == 0 {
+	if user.Nick == "" {
+		w.Header().Set("WWW-Authenticate", "Basic")
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "User not found"))
 		return
 	}
-
 	pass := make([]byte, 4)
 	_, err = rand.Read(pass)
 	if err != nil {
@@ -421,13 +409,13 @@ func resetPass(w http.ResponseWriter, r *http.Request) {
 		pass[i] = chars[int(n)%len(chars)]
 	}
 
-	go sendEmail(users[0].Email, users[0].Nick, string(pass))
+	go sendEmail(user.Email, user.Nick, string(pass))
 
-	up := base.Updates{
-		"Pass":  string(pass),
-		"Token": nil,
-	}
-	err = usersDB.Update(users[0].Key, up)
+	// up := base.Updates{
+	// 	"Pass":  string(pass),
+	// 	"Token": nil,
+	// }
+	// err = usersDB.Update(users[0].Key, up)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
@@ -475,18 +463,8 @@ func register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbUsers := []User{}
-	query := base.FetchInput{
-		Q:     base.Query{{"Nick": newUser.Nick}, {"Email": newUser.Email}},
-		Dest:  &dbUsers,
-		Limit: 1,
-	}
-	_, err = usersDB.Fetch(&query)
-	if err != nil {
-		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
-		return
-	}
-	if len(dbUsers) > 0 {
+	user, err := getUser(newUser.Nick)
+	if user.Email != "" {
 		w.WriteHeader(http.StatusUnauthorized)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", "user already exists"))
 		return
@@ -509,7 +487,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 		Expires: time.Now().Add(120 * time.Hour),
 	}
 
-	_, err = usersDB.Insert(newUser)
+	err = db.Fetch(db.Put(newUser).Key("users/"+newUser.Nick), nil)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))

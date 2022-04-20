@@ -13,7 +13,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/deta/deta-go/service/base"
 	"github.com/gomarkdown/markdown"
 )
 
@@ -100,11 +99,11 @@ func serveList(w http.ResponseWriter, r *http.Request, user User, owner string) 
 
 func getTask(id int, listName, owner string) (t Task, err error) {
 	tasks := []Task{}
-	query := base.FetchInput{
-		Q:    base.Query{{"ID": id, "ListOwner": owner, "List": listName}},
-		Dest: &tasks,
-	}
-	_, err = tasksDB.Fetch(&query)
+	// query := base.FetchInput{
+	// 	Q:    base.Query{{"ID": id, "ListOwner": owner, "List": listName}},
+	// 	Dest: &tasks,
+	// }
+	// _, err = tasksDB.Fetch(&query)
 	if err != nil {
 		return
 	}
@@ -169,7 +168,7 @@ func saveTask(t Task) error {
 	if anyErr != nil {
 		return anyErr
 	}
-	_, err = tasksDB.Put(t)
+	// _, err = tasksDB.Put(t)
 	return err
 }
 
@@ -178,16 +177,16 @@ func getTasks(list List, owner string, user User, page int) (ts []Task, err erro
 		err = fmt.Errorf("no permission on %s", list.Name)
 		return
 	}
-	query := base.FetchInput{
-		Q:     base.Query{{"List": list.Name, "ListOwner": owner, "ID?lte": user.Lists[list.Name].TaskNumber - page*user.Configs.TaskDisplayLimit}},
-		Dest:  &ts,
-		Limit: user.Configs.TaskDisplayLimit,
-	}
+	// query := base.FetchInput{
+	// 	Q:     base.Query{{"List": list.Name, "ListOwner": owner, "ID?lte": user.Lists[list.Name].TaskNumber - page*user.Configs.TaskDisplayLimit}},
+	// 	Dest:  &ts,
+	// 	Limit: user.Configs.TaskDisplayLimit,
+	// }
 
 	// if lastID > 0 {
 	// 	query.Q = append(query.Q, map[string]interface{}{"ID?gte": user.Lists[list.Name].TaskNumber - lastID*user.Configs.TaskDisplayLimit})
 	// }
-	_, err = tasksDB.Fetch(&query)
+	// _, err = tasksDB.Fetch(&query)
 	if err != nil {
 		return
 	}
@@ -305,10 +304,10 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 		}
 
 		go func() {
-			up := base.Updates{
-				"Lists." + parts[1] + ".TaskNumber": usersDB.Util.Increment(1),
-			}
-			err = usersDB.Update(user.Key, up)
+			// up := base.Updates{
+			// 	"Lists." + parts[1] + ".TaskNumber": usersDB.Util.Increment(1),
+			// }
+			// err = usersDB.Update(user.Key, up)
 			if err != nil {
 				println("error on user update:", err.Error())
 			}
@@ -356,7 +355,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 			}
 		}
 	case "delete":
-		err = tasksDB.Delete(t.Key)
+		// err = tasksDB.Delete(t.Key)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
