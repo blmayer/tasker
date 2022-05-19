@@ -31,11 +31,13 @@
 					{{end}}
 				</span>
 				<section>
+					{{with decrypt .}}
 					<a href="/{{.List}}/{{.ID}}">
 						<h3>#{{.ID}} {{.Title}}</h3>
 						<p><b>{{.Summary}}</b></p>
 						<p><em>{{.Status}}</em></p>
 					</a>
+					{{end}}
 				</section>
 			{{end}}
 			<center>

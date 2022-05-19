@@ -18,6 +18,7 @@
 				<div>{{.Date.Format "02 Jan 06 15:04"}}</div>
 			</span>
 			<section>
+				{{with decrypt .}}
 				<form action="edit" method="POST">
 					<h3>#{{.ID}} <input name="title" placeholder="Title" size="35" value="{{.Title}}" autofocus required maxlength="1950"></h3>
 					<p><input name="summary" placeholder="Summary" size="35" value="{{.Summary}}" autofocus maxlength="1950"></p>
@@ -39,6 +40,7 @@
 
 					<input type="submit" value="Update">
 				</form>
+				{{end}}
 			</section>
 		</main>
 	</body>

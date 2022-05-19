@@ -9,9 +9,11 @@
     </p>
 </span>
 <section>
+    {{with decrypt .}}
     <h3>#{{.ID}} {{.Title}}</h3>
     <p><b>{{.Summary}}</b></p>
-    <article>{{.Description}}</article>
+    <article>{{html .Description}}</article>
     <p>Created by: <em>{{.Creator}}</em></p>
     <p><em>{{.Status}}</em></p>
+    {{end}}
 </section>

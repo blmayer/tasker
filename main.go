@@ -6,10 +6,8 @@ import (
 	"encoding/base64"
 	"net/http"
 	"os"
+	"tasker/internal/types"
 	"text/template"
-
-	"github.com/deta/deta-go/deta"
-	"github.com/deta/deta-go/service/base"
 
 	"github.com/gomarkdown/markdown"
 
@@ -17,14 +15,14 @@ import (
 )
 
 var (
-	//go:embed *.html *.css *.gohtml *.txt *.ico
+	//go:embed www/*.html www/*.css www/*.gohtml www/*.txt www/*.ico
 	content embed.FS
 
-	pages   *template.Template
-	usersDB *base.Base
-	tasksDB *base.Base
+	root  string = "db.gob"
+	pages *template.Template
+	pol   = bluemonday.UGCPolicy()
 
-	pol = bluemonday.UGCPolicy()
+	Users = map[string]*types.User{}
 )
 
 func logErr(prefix string, err error) {
@@ -34,8 +32,23 @@ func logErr(prefix string, err error) {
 }
 
 func main() {
+	for i := 1; i < len(os.Args); i++ {
+		switch os.Args[i] {
+		case "-r", "--root":
+			i++
+			root = os.Args[i]
+		default:
+			println("error: wrong argument", os.Args[i], "\n")
+			os.Exit(-1)
+		}
+	}
+
+	err := readDB(root)
+	if err != nil {
+		panic("read DB: " + err.Error())
+	}
+
 	// Parse templates
-	var err error
 	pages, err = template.New("").Funcs(
 		template.FuncMap{
 			"minus": func(a, b int) int {
@@ -44,8 +57,17 @@ func main() {
 			"plus": func(a, b int) int {
 				return a + b
 			},
+			"html": func(s string) string {
+				return string(markdown.ToHTML([]byte(s), nil, nil))
+			},
+			"decrypt": func(t types.Task) types.Task {
+				if err := t.Decrypt(key); err != nil {
+					logErr("decrypt", err)
+				}
+				return t
+			},
 		},
-	).ParseFS(content, "*.html", "*.css", "*.gohtml", "*.txt")
+	).ParseFS(content, "www/*.html", "www/*.css", "www/*.gohtml", "www/*.txt")
 	if err != nil {
 		panic(err)
 	}
@@ -59,26 +81,12 @@ func main() {
 		println("running in debug mode")
 	}
 
-	detaKey := os.Getenv("DETA_KEY")
-	d, err := deta.New(deta.WithProjectKey(detaKey))
-	logErr("deta client", err)
-
-	usersDB, err = base.New(d, "users")
-	logErr("deta base", err)
-	tasksDB, err = base.New(d, "tasks")
-	logErr("deta base", err)
-
 	encKey := os.Getenv("KEY")
 	encText, err := base64.StdEncoding.DecodeString(encKey)
 	logErr("encryption key", err)
 
 	key, err = x509.ParsePKCS1PrivateKey(encText)
 	logErr("encryption key parse", err)
-
-	for i, t := range tasks {
-		md := markdown.ToHTML([]byte(t.Description), nil, nil)
-		tasks[i].Description = string(md)
-	}
 
 	http.HandleFunc("/", index)
 	http.HandleFunc("/newlist", newList)
