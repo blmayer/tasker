@@ -27,8 +27,12 @@ func serveList(w http.ResponseWriter, r *http.Request, user types.User, owner st
 		page, _ = strconv.Atoi(pagination)
 	}
 
-	tasks := make([]*types.Task, len(list.Tasks))
-	copy(tasks, list.Tasks)
+	tasks := make([]*types.Task, 0, len(list.Tasks))
+	for _, t := range list.Tasks {
+		if t.Status != "deleted" {
+			tasks = append(tasks, t)
+		}
+	}
 	p := indexPayload{
 		User:  user,
 		List:  *list,
@@ -172,7 +176,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user types.User, ow
 			}
 		}
 	case "delete":
-		user.Lists[list.Name].Tasks[taskID-1] = nil
+		user.Lists[list.Name].Tasks[taskID].Status = "deleted"
 	}
 
 	writeDB(root)
