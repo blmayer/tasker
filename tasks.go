@@ -290,7 +290,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 			Date:        time.Now(),
 		}
 		if due := r.Form.Get("due"); due != "" {
-			dueTime, err := time.Parse(time.RFC3339, due)
+			dueTime, err := parseTime(due)
 			if err != nil {
 				logErr("time.Parse", err)
 				logErr("template", pages.ExecuteTemplate(w, "error.html", err))
@@ -370,4 +370,19 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 func newTask(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	logErr("template", pages.ExecuteTemplate(w, "new.html", Task{List: parts[2], Date: time.Now()}))
+}
+
+func parseTime(str string) (time.Time, error) {
+	formats := []string{
+		time.RFC3339,
+		"2006-01-02T15:04",
+	}
+
+	for _, f := range formats {
+		t, err := time.Parse(f, str)
+		if err == nil {
+			return t, nil
+		}
+	}
+	return time.Time{}, fmt.Errorf("could not parse time in any format")
 }
