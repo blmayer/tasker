@@ -8,7 +8,7 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/blmayer/github.com/blmayer/tasker
+      - 'gcr.io/blmayer/github.com/blmayer/tasker:${SHORT_SHA}'
   - name: gcr.io/cloud-builders/gcloud
     args:
       - run
