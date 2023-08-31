@@ -2,7 +2,10 @@
 app_name: tasker
 tagline: A simple but stylish task list
 git: "<https://github.com/blmayer/tasker>"
+homepage: "<https://tasker.myr.sh>"
 ---
+
+![](https://github.com/blmayer/tasker/blob/e4a24217dda222607c5ccecc613a18942c5351cf/print.png)
 
 Tasker is a very simple list web app that everyone can use. I designed it to be minimalistic, yes this weird looks is on purpose, and easy to use. But there are some interesting features already:
 
