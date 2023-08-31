@@ -1,9 +1,7 @@
 package main
 
 import (
-	"crypto/x509"
 	"embed"
-	"encoding/base64"
 	"net/http"
 	"os"
 	"text/template"
@@ -59,21 +57,13 @@ func main() {
 		println("running in debug mode")
 	}
 
-	detaKey := os.Getenv("DETA_KEY")
-	d, err := deta.New(deta.WithProjectKey(detaKey))
+	d, err := deta.New()
 	logErr("deta client", err)
 
 	usersDB, err = base.New(d, "users")
 	logErr("deta base", err)
 	tasksDB, err = base.New(d, "tasks")
 	logErr("deta base", err)
-
-	encKey := os.Getenv("KEY")
-	encText, err := base64.StdEncoding.DecodeString(encKey)
-	logErr("encryption key", err)
-
-	key, err = x509.ParsePKCS1PrivateKey(encText)
-	logErr("encryption key parse", err)
 
 	for i, t := range tasks {
 		md := markdown.ToHTML([]byte(t.Description), nil, nil)

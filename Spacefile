@@ -1,0 +1,12 @@
+# Spacefile Docs: https://go.deta.dev/docs/spacefile/v0
+v: 0
+icon: ./icon.png
+micros:
+  - name: tasker
+    src: ./
+    engine: custom
+    primary: true
+    commands:
+      - CGO_ENABLED=0 go build
+    run: ./tasker
+    dev: go run .

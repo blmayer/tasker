@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/rsa"
+	//"crypto/rsa"
 	"time"
 )
 
@@ -84,7 +84,7 @@ type indexPayload struct {
 	Page  int
 }
 
-var key *rsa.PrivateKey
+//var key *rsa.PrivateKey
 
 var reservedNames = []string{
 	"tasks", "new", "newlist", "profile", "reset", "login", "reset", "logout",

@@ -1,53 +1,16 @@
 package main
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"encoding/base64"
 	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/deta/deta-go/service/base"
 	"github.com/gomarkdown/markdown"
 )
-
-func encrypt(text string, wg *sync.WaitGroup) (string, error) {
-	defer wg.Done()
-	cypher, err := rsa.EncryptOAEP(
-		sha256.New(),
-		rand.Reader,
-		&key.PublicKey,
-		[]byte(text), nil,
-	)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.EncodeToString(cypher), nil
-}
-
-func decrypt(cypher string, wg *sync.WaitGroup) (string, error) {
-	defer wg.Done()
-	bytes, err := base64.StdEncoding.DecodeString(cypher)
-	if err != nil {
-		return "", err
-	}
-
-	text, err := rsa.DecryptOAEP(
-		sha256.New(),
-		rand.Reader,
-		key,
-		bytes, nil,
-	)
-
-	return string(text), err
-}
 
 func getUserList(user User, listName string) List {
 	if listName == "" {
@@ -114,62 +77,11 @@ func getTask(id int, listName, owner string) (t Task, err error) {
 	}
 	t = tasks[0]
 
-	// Decrypt
-	wg := sync.WaitGroup{}
-	wg.Add(3)
-	var anyErr error
-	go func() {
-		t.Title, err = decrypt(t.Title, &wg)
-		if err != nil {
-			anyErr = err
-		}
-	}()
-	go func() {
-		t.Summary, err = decrypt(t.Summary, &wg)
-		if err != nil {
-			anyErr = err
-		}
-	}()
-	go func() {
-		t.Description, err = decrypt(t.Description, &wg)
-		if err != nil {
-			anyErr = err
-		}
-	}()
-	wg.Wait()
-
-	return t, anyErr
+	return
 }
 
 func saveTask(t Task) error {
-	var err, anyErr error
-	wg := sync.WaitGroup{}
-	wg.Add(3)
-	go func() {
-		t.Title, err = encrypt(t.Title, &wg)
-		if err != nil {
-			anyErr = err
-		}
-	}()
-	go func() {
-		t.Summary, err = encrypt(t.Summary, &wg)
-		if err != nil {
-			anyErr = err
-		}
-	}()
-	go func() {
-		t.Description, err = encrypt(t.Description, &wg)
-		if err != nil {
-			anyErr = err
-		}
-	}()
-
-	wg.Wait()
-
-	if anyErr != nil {
-		return anyErr
-	}
-	_, err = tasksDB.Put(t)
+	_, err := tasksDB.Put(t)
 	return err
 }
 
@@ -188,32 +100,7 @@ func getTasks(list List, owner string, user User, page int) (ts []Task, err erro
 	// 	query.Q = append(query.Q, map[string]interface{}{"ID?gte": user.Lists[list.Name].TaskNumber - lastID*user.Configs.TaskDisplayLimit})
 	// }
 	_, err = tasksDB.Fetch(&query)
-	if err != nil {
-		return
-	}
-
-	// Decode in parallel
-	wg := sync.WaitGroup{}
-	wg.Add(2 * len(ts))
-	var anyErr error
-	for i := range ts {
-		go func(i int) {
-			ts[i].Title, err = decrypt(ts[i].Title, &wg)
-			if err != nil {
-				anyErr = err
-			}
-		}(i)
-		go func(i int) {
-			ts[i].Summary, err = decrypt(ts[i].Summary, &wg)
-			if err != nil {
-				anyErr = err
-			}
-			ts[i].Description = ""
-		}(i)
-	}
-	wg.Wait()
-
-	return ts, anyErr
+	return ts, err
 }
 
 func serveTask(w http.ResponseWriter, r *http.Request, user User, owner string) {
