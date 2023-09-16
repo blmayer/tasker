@@ -14,17 +14,17 @@ import (
 
 func getUserList(user User, listName string) List {
 	if listName == "" {
-		listName = user.Configs.DefaultList
+		listName = user.DefaultList
 	}
 
 	return user.Lists[listName]
 }
 
-func serveList(w http.ResponseWriter, r *http.Request, user User, owner string) {
-	parts := strings.Split(r.URL.Path, "/")
-	list := getUserList(user, parts[1])
-	if list.Name == "" {
-		http.ServeFile(w, r, parts[1])
+func serveList(w http.ResponseWriter, r *http.Request, listName string) {
+	var user User
+	err := db.Get("config", &user)
+	if err != nil {
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
@@ -34,21 +34,19 @@ func serveList(w http.ResponseWriter, r *http.Request, user User, owner string) 
 		page, _ = strconv.Atoi(pagination)
 	}
 
-	var err error
+	list := user.Lists[listName]
 	p := indexPayload{
-		User:  user,
-		List:  list,
-		Tasks: tasks,
-		Page:  page,
+		List: list,
+		Page: page,
 	}
 
-	p.Tasks, err = getTasks(list, owner, user, page)
+	p.Tasks, err = getTasks(listName, list.TaskNumber, page, user.TaskDisplayLimit)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
-	// Sort by time by default
+	// sort by time by default
 	sort.SliceStable(p.Tasks, func(i, j int) bool {
 		return p.Tasks[i].Date.Unix() > p.Tasks[j].Date.Unix()
 	})
@@ -61,13 +59,13 @@ func serveList(w http.ResponseWriter, r *http.Request, user User, owner string) 
 	logErr("template", pages.ExecuteTemplate(w, "index.html", p))
 }
 
-func getTask(id int, listName, owner string) (t Task, err error) {
+func getTask(id int, listName string) (t Task, err error) {
 	tasks := []Task{}
 	query := base.FetchInput{
-		Q:    base.Query{{"ID": id, "ListOwner": owner, "List": listName}},
+		Q:    base.Query{{"ID": id, "List": listName}},
 		Dest: &tasks,
 	}
-	_, err = tasksDB.Fetch(&query)
+	_, err = db.Fetch(&query)
 	if err != nil {
 		return
 	}
@@ -81,43 +79,33 @@ func getTask(id int, listName, owner string) (t Task, err error) {
 }
 
 func saveTask(t Task) error {
-	_, err := tasksDB.Put(t)
+	_, err := db.Put(t)
 	return err
 }
 
-func getTasks(list List, owner string, user User, page int) (ts []Task, err error) {
-	if list.Permissions&(ReadPermission|PublicPermission) == 0 {
-		err = fmt.Errorf("no permission on %s", list.Name)
-		return
-	}
+func getTasks(list string, num, page, limit int) (ts []Task, err error) {
 	query := base.FetchInput{
-		Q:     base.Query{{"List": list.Name, "ListOwner": owner, "ID?lte": user.Lists[list.Name].TaskNumber - page*user.Configs.TaskDisplayLimit}},
+		Q:     base.Query{{"List": list, "ID?gte": num - page*limit}},
 		Dest:  &ts,
-		Limit: user.Configs.TaskDisplayLimit,
+		Limit: limit,
+		Desc:  true,
 	}
 
 	// if lastID > 0 {
 	// 	query.Q = append(query.Q, map[string]interface{}{"ID?gte": user.Lists[list.Name].TaskNumber - lastID*user.Configs.TaskDisplayLimit})
 	// }
-	_, err = tasksDB.Fetch(&query)
+	_, err = db.Fetch(&query)
 	return ts, err
 }
 
-func serveTask(w http.ResponseWriter, r *http.Request, user User, owner string) {
-	parts := strings.Split(r.URL.Path, "/")
-
-	list := getUserList(user, parts[1])
-	if list.Name == "" {
-		http.ServeFile(w, r, parts[1])
-		return
-	}
-	taskID, err := strconv.Atoi(parts[2])
+func serveTask(w http.ResponseWriter, r *http.Request, list, task string) {
+	taskID, err := strconv.Atoi(task)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
-	t, err := getTask(taskID, list.Name, owner)
+	t, err := getTask(taskID, list)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
@@ -128,36 +116,33 @@ func serveTask(w http.ResponseWriter, r *http.Request, user User, owner string) 
 	logErr("template", pages.ExecuteTemplate(w, "task.html", t))
 }
 
-func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner string) {
-	parts := strings.Split(r.URL.Path, "/")
+func serveTaskAction(w http.ResponseWriter, r *http.Request, listName, task, action string) {
+	var user User
+	err := db.Get("config", &user)
+	if err != nil {
+		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
+		return
+	}
 
-	list := getUserList(user, parts[1])
+	list := getUserList(user, listName)
 	if list.Name == "" {
-		http.ServeFile(w, r, parts[1])
+		http.ServeFile(w, r, listName)
 		return
 	}
 
-	// Check permissions
-	if owner != user.Nick {
-		if getUserList(user, parts[1]).Permissions&WritePermission == 0 {
-			logErr("template", pages.ExecuteTemplate(w, "error.html", "no permission"))
-			return
-		}
-	}
-
-	taskID, err := strconv.Atoi(parts[2])
+	taskID, err := strconv.Atoi(task)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
-	t, err := getTask(taskID, list.Name, owner)
+	t, err := getTask(taskID, list.Name)
 	if err != nil {
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
 
-	switch parts[3] {
+	switch action {
 	case "new":
 		err := r.ParseForm()
 		if err != nil {
@@ -168,12 +153,10 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 		t := Task{
 			ID:          list.TaskNumber,
 			List:        list.Name,
-			ListOwner:   list.Owner,
 			Title:       pol.Sanitize(r.Form.Get("title")),
 			Summary:     pol.Sanitize(r.Form.Get("summary")),
 			Description: pol.Sanitize(r.Form.Get("description")),
 			Status:      pol.Sanitize(r.Form.Get("status")),
-			Creator:     user.Nick,
 			Date:        time.Now(),
 		}
 		if due := r.Form.Get("due"); due != "" {
@@ -193,9 +176,9 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 
 		go func() {
 			up := base.Updates{
-				"Lists." + parts[1] + ".TaskNumber": usersDB.Util.Increment(1),
+				"Lists." + listName + ".TaskNumber": db.Util.Increment(1),
 			}
-			err = usersDB.Update(user.Key, up)
+			err = db.Update("config", up)
 			if err != nil {
 				println("error on user update:", err.Error())
 			}
@@ -234,7 +217,6 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 			t.Summary = pol.Sanitize(r.Form.Get("summary"))
 			t.Description = pol.Sanitize(r.Form.Get("description"))
 			t.Status = pol.Sanitize(r.Form.Get("status"))
-			t.Creator = pol.Sanitize(r.Form.Get("creator"))
 			t.Date = newDate
 
 			if err := saveTask(t); err != nil {
@@ -243,7 +225,7 @@ func serveTaskAction(w http.ResponseWriter, r *http.Request, user User, owner st
 			}
 		}
 	case "delete":
-		err = tasksDB.Delete(t.Key)
+		err = db.Delete(t.Key)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			logErr("template", pages.ExecuteTemplate(w, "error.html", err))
