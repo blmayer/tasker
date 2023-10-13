@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/deta/deta-go/deta"
 	"github.com/deta/deta-go/service/base"
 	"github.com/gomarkdown/markdown"
 )
@@ -24,6 +25,22 @@ func serveList(w http.ResponseWriter, r *http.Request, listName string) {
 	var user User
 	err := db.Get("config", &user)
 	if err != nil {
+		if err == deta.ErrNotFound {
+			user = User{
+				Key: "config",
+				CreateDate: time.Now(),
+				TaskDisplayLimit: 20,
+				DefaultList: "tasks",
+				Lists: map[string]List{
+					"tasks": {
+						Name:       "tasks",
+						TaskNumber: 0,
+						CreateDate: time.Now(),
+					},
+				},
+			}
+			db.Insert(user)
+		}
 		logErr("template", pages.ExecuteTemplate(w, "error.html", err))
 		return
 	}
@@ -34,10 +51,14 @@ func serveList(w http.ResponseWriter, r *http.Request, listName string) {
 		page, _ = strconv.Atoi(pagination)
 	}
 
+	if listName == "" {
+		listName = user.DefaultList
+	}
 	list := user.Lists[listName]
 	p := indexPayload{
 		List: list,
 		Page: page,
+		User: user,
 	}
 
 	p.Tasks, err = getTasks(listName, list.TaskNumber, page, user.TaskDisplayLimit)
@@ -85,7 +106,7 @@ func saveTask(t Task) error {
 
 func getTasks(list string, num, page, limit int) (ts []Task, err error) {
 	query := base.FetchInput{
-		Q:     base.Query{{"List": list, "ID?gte": num - page*limit}},
+		Q:     base.Query{{"List": list, "ID?gte": num - (page+1)*limit}},
 		Dest:  &ts,
 		Limit: limit,
 		Desc:  true,

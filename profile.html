@@ -15,28 +15,23 @@
 
 	<body>
 		<header>
-			<a href="/"><h1>{{.Configs.DefaultList}}</h1></a>
+			<a href="/"><h1>{{.DefaultList}}</h1></a>
 		</header>
 		<main>
 			<span>
-				<div>{{.CreateDate.Format "02 Jan 06 15:04"}}</div>
 				<p>
 					<a href="/newlist"><small>new list</small></a><br>
-					<a href="/logout"><small>logout</small></a><br>
-					<a href="/delete"><small>delete account</small></a><br>
 				</p>
 			</span>
 			<section>
-				<h3>#X {{.Nick}}</h3>
-				<p><b>{{.Email}}</b></p>
+				<h3>#X You</h3>
+				<p><b>Your settings</b></p>
 				<form action="/profile" method="POST">
 					<article>
 						<h3>Lists</h3>
 						<dl>
 						{{range $k, $v := .Lists}}
 							<dt><a href="/{{$k}}">{{$k}}</a></dt>
-								<dd>Owner: {{$v.Owner}}</dd>
-								<dd>Permissions: {{$v.Permissions}}</dd>
 								<dd>Create date: {{$v.CreateDate.Format "02 Jan 06 15:04"}}</dd>
 						{{end}}
 						</dl>
@@ -45,15 +40,15 @@
 							<li>
 								Default list:
 								<select name="default_list">
-									{{$l := .Configs.DefaultList}}
+									{{$l := .DefaultList}}
 									{{range $k, $v := .Lists}}
 										<option {{if eq $k $l}}selected{{end}} value="{{$k}}">{{$k}}</option>
 									{{end}}
 								</select>
 							</li>
-							<li>Default sort: {{.Configs.DefaultSort}}</li>
-							<li>Default filter: {{.Configs.DefaultFilter}}</li>
-							<li>Task display limit: <input type="number" name="task_display_limit" size="4" value="{{.Configs.TaskDisplayLimit}}"></li>
+							<li>Default sort: {{.DefaultSort}}</li>
+							<li>Default filter: {{.DefaultFilter}}</li>
+							<li>Task display limit: <input type="number" name="task_display_limit" size="4" value="{{.TaskDisplayLimit}}"></li>
 						</ul>
 					</article>
 					<p><em>Active</em></p>
