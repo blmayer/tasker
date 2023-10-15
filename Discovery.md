@@ -1,11 +1,14 @@
 ---
 app_name: tasker
-tagline: A simple but stylish task list
-git: "<https://github.com/blmayer/tasker>"
-homepage: "<https://tasker.myr.sh>"
+title: "tasker: Your new TODO list"
+tagline: "A simple but stylish task list"
+git: "https://github.com/blmayer/tasker"
+open_code: true
+homepage: "https://tasker.myr.sh"
+theme_color: "#000000"
+media:
+  - "print.png"
 ---
-
-![](https://github.com/blmayer/tasker/blob/e4a24217dda222607c5ccecc613a18942c5351cf/print.png)
 
 Tasker is a very simple list web app that everyone can use. I designed it to be minimalistic, yes this weird looks is on purpose, and easy to use. But there are some interesting features already:
 
@@ -13,10 +16,9 @@ Tasker is a very simple list web app that everyone can use. I designed it to be 
  - No cookies
  - Simple HTML with clean interface
  - Free for you
- - Delete your account and data at any time
  - No emails
  - No ads
- - I don’t use or sell your data
+ - You control your data
  - Completely open source
 
 I intend to keep working on it on my free time, but I can’t promise you too much. If this software ever get usefull for you please leave your feedback, or consider making a donation, that will be greatly appreciated.
